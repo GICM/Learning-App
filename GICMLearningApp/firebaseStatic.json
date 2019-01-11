@@ -1,0 +1,449 @@
+ [
+  {
+  "comp_id": "1",
+  "company_name": "Capgemini",
+  "posting": [
+              {
+              "post_id": "0",
+              "post_name": "Job Seeker"
+              },
+              {
+              "post_id": "6",
+              "post_name": "Analyst"
+              },
+              {
+              "post_id": "5",
+              "post_name": "Consultant"
+              },
+              {
+              "post_id": "4",
+              "post_name": "Senior Consultant"
+              },
+              {
+              "post_id": "3",
+              "post_name": "Managing Consultant"
+              },
+              {
+              "post_id": "2",
+              "post_name": "Principal"
+              },
+              {
+              "post_id": "1",
+              "post_name": "Vice President"
+              }
+              ]
+  },
+  {
+  "comp_id": "2",
+  "company_name": "McKinsey & Company",
+  "posting": [
+              {
+              "post_id": "0",
+              "post_name": "Job Seeker"
+              },
+              {
+              "post_id": "7",
+              "post_name": "Business Analyst"
+              },
+              {
+              "post_id": "9",
+              "post_name": "Associate"
+              },
+              {
+              "post_id": "8",
+              "post_name": "Engagement Manager"
+              },
+              {
+              "post_id": "10",
+              "post_name": "Associate Partner"
+              },
+              {
+              "post_id": "11",
+              "post_name": "Partner"
+              }
+              ]
+  },
+  {
+  "comp_id": "3",
+  "company_name": "Boston Consulting Group",
+  "posting": [
+              {
+              "post_id": "0",
+              "post_name": "Job Seeker"
+              },
+              {
+              "post_id": "9",
+              "post_name": "Associate"
+              },
+              {
+              "post_id": "5",
+              "post_name": "Consultant"
+              },
+              {
+              "post_id": "12",
+              "post_name": "Project Leader"
+              },
+              {
+              "post_id": "2",
+              "post_name": "Principal"
+              },
+              {
+              "post_id": "11",
+              "post_name": "Partner"
+              }
+              ]
+  },
+  {
+  "comp_id": "4",
+  "company_name": "Bain & Company",
+  "posting": [
+              {
+              "post_id": "0",
+              "post_name": "Job Seeker"
+              },
+              {
+              "post_id": "13",
+              "post_name": "Associate Consultant"
+              },
+              {
+              "post_id": "14",
+              "post_name": "Senior Associate Consultant"
+              },
+              {
+              "post_id": "5",
+              "post_name": "Consultant"
+              },
+              {
+              "post_id": "15",
+              "post_name": "Case Team Leader"
+              },
+              {
+              "post_id": "16",
+              "post_name": "Manager"
+              },
+              {
+              "post_id": "2",
+              "post_name": "Principal"
+              },
+              {
+              "post_id": "11",
+              "post_name": "Partner"
+              }
+              ]
+  },
+  {
+  "comp_id": "5",
+  "company_name": "Accenture",
+  "posting": [
+              {
+              "post_id": "0",
+              "post_name": "Job Seeker"
+              },
+              {
+              "post_id": "6",
+              "post_name": "Analyst"
+              },
+              {
+              "post_id": "5",
+              "post_name": "Consultant"
+              },
+              {
+              "post_id": "16",
+              "post_name": "Manager"
+              },
+              {
+              "post_id": "17",
+              "post_name": "Senior Manager"
+              },
+              {
+              "post_id": "10",
+              "post_name": "Associate Partner"
+              },
+              {
+              "post_id": "11",
+              "post_name": "Partner"
+              }
+              ]
+  },
+  {
+  "comp_id": "6",
+  "company_name": "Deloitte",
+  "posting": [
+              {
+              "post_id": "0",
+              "post_name": "Job Seeker"
+              },
+              {
+              "post_id": "6",
+              "post_name": "Analyst"
+              },
+              {
+              "post_id": "5",
+              "post_name": "Consultant"
+              },
+              {
+              "post_id": "4",
+              "post_name": "Senior Consultant"
+              },
+              {
+              "post_id": "16",
+              "post_name": "Manager"
+              },
+              {
+              "post_id": "17",
+              "post_name": "Senior Manager"
+              },
+              {
+              "post_id": "10",
+              "post_name": "Associate Partner"
+              },
+              {
+              "post_id": "11",
+              "post_name": "Partner"
+              }
+              ]
+  },
+  {
+  "comp_id": "7",
+  "company_name": "Ernst & Young",
+  "posting": [
+              {
+              "post_id": "0",
+              "post_name": "Job Seeker"
+              },
+              {
+              "post_id": "18",
+              "post_name": "Junior"
+              },
+              {
+              "post_id": "19",
+              "post_name": "Senior"
+              },
+              {
+              "post_id": "16",
+              "post_name": "Manager"
+              },
+              {
+              "post_id": "17",
+              "post_name": "Senior Manager"
+              },
+              {
+              "post_id": "11",
+              "post_name": "Partner"
+              },
+              {
+              "post_id": "20",
+              "post_name": "Director"
+              }
+              ]
+  },
+  {
+  "comp_id": "8",
+  "company_name": "KPMG",
+  "posting": [
+              {
+              "post_id": "0",
+              "post_name": "Job Seeker"
+              },
+              {
+              "post_id": "21",
+              "post_name": "Assistant"
+              },
+              {
+              "post_id": "22",
+              "post_name": "Supervisor"
+              },
+              {
+              "post_id": "16",
+              "post_name": "Manager"
+              },
+              {
+              "post_id": "17",
+              "post_name": "Senior Manager"
+              },
+              {
+              "post_id": "20",
+              "post_name": "Director"
+              },
+              {
+              "post_id": "11",
+              "post_name": "Partner"
+              }
+              ]
+  },
+  {
+  "comp_id": "9",
+  "company_name": "PricewaterhouseCoopers",
+  "posting": [
+              {
+              "post_id": "0",
+              "post_name": "Job Seeker"
+              },
+              {
+              "post_id": "9",
+              "post_name": "Associate"
+              },
+              {
+              "post_id": "23",
+              "post_name": "Senior Associate"
+              },
+              {
+              "post_id": "16",
+              "post_name": "Manager"
+              },
+              {
+              "post_id": "17",
+              "post_name": "Senior Manager"
+              },
+              {
+              "post_id": "20",
+              "post_name": "Director"
+              },
+              {
+              "post_id": "11",
+              "post_name": "Partner"
+              }
+              ]
+  },
+  {
+  "comp_id": "10",
+  "company_name": "Booz Allen Hamilton",
+  "posting": [
+              {
+              "post_id": "0",
+              "post_name": "Job Seeker"
+              },
+              {
+              "post_id": "5",
+              "post_name": "Consultant"
+              },
+              {
+              "post_id": "4",
+              "post_name": "Senior Consultant"
+              },
+              {
+              "post_id": "9",
+              "post_name": "Associate"
+              },
+              {
+              "post_id": "24",
+              "post_name": "Lead Associates"
+              },
+              {
+              "post_id": "23",
+              "post_name": "Senior Associate"
+              },
+              {
+              "post_id": "11",
+              "post_name": "Partner"
+              }
+              ]
+  },
+  {
+  "comp_id": "11",
+  "company_name": "Roland Berger",
+  "posting": [
+              {
+              "post_id": "0",
+              "post_name": "Job Seeker"
+              },
+              {
+              "post_id": "25",
+              "post_name": "Junior Consultant"
+              },
+              {
+              "post_id": "5",
+              "post_name": "Consultant"
+              },
+              {
+              "post_id": "26",
+              "post_name": "Senior Consultant"
+              },
+              {
+              "post_id": "27",
+              "post_name": "Project Manager"
+              },
+              {
+              "post_id": "2",
+              "post_name": "Principal"
+              },
+              {
+              "post_id": "11",
+              "post_name": "Partner"
+              }
+              ]
+  },
+  {
+  "comp_id": "12",
+  "company_name": "Oliver Wyman",
+  "posting": [
+              {
+              "post_id": "0",
+              "post_name": "Job Seeker"
+              },
+              {
+              "post_id": "5",
+              "post_name": "Consultant"
+              },
+              {
+              "post_id": "26",
+              "post_name": "Senior Consultant"
+              },
+              {
+              "post_id": "9",
+              "post_name": "Associate"
+              },
+              {
+              "post_id": "8",
+              "post_name": "Engagement Manager"
+              },
+              {
+              "post_id": "2",
+              "post_name": "Principal"
+              },
+              {
+              "post_id": "11",
+              "post_name": "Partner"
+              }
+              ]
+  },
+  {
+  "comp_id": "13",
+  "company_name": "A.T. Kearney",
+  "posting": [
+              {
+              "post_id": "0",
+              "post_name": "Job Seeker"
+              },
+              {
+              "post_id": "7",
+              "post_name": "Business Analyst"
+              },
+              {
+              "post_id": "28",
+              "post_name": "Senior Business Analyst"
+              },
+              {
+              "post_id": "9",
+              "post_name": "Associate"
+              },
+              {
+              "post_id": "16",
+              "post_name": "Manager"
+              },
+              {
+              "post_id": "2",
+              "post_name": "Principal"
+              },
+              {
+              "post_id": "11",
+              "post_name": "Partner"
+              }
+              ]
+  },
+  {
+  "comp_id": "14",
+  "company_name": "Other"
+  }
+  ]
+

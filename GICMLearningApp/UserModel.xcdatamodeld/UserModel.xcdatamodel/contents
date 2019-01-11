@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="14135" systemVersion="17E199" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="Comment_Last" representedClassName="Comment_Last" syncable="YES" codeGenerationType="class">
+        <attribute name="comment_id" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="comments" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="course_id" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="posted_date" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="user_id" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="user_name" optional="YES" attributeType="String" syncable="YES"/>
+        <relationship name="content" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ContentList" inverseName="commentLast" inverseEntity="ContentList" syncable="YES"/>
+    </entity>
+    <entity name="ContentList" representedClassName="ContentList" syncable="YES" codeGenerationType="class">
+        <attribute name="course_description" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="course_id" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="course_short_desc" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="course_title" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="thumbnail" optional="YES" attributeType="String" syncable="YES"/>
+        <relationship name="commentLast" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Comment_Last" inverseName="content" inverseEntity="Comment_Last" syncable="YES"/>
+        <relationship name="course" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="CourseList" inverseName="content" inverseEntity="CourseList" syncable="YES"/>
+    </entity>
+    <entity name="CourseList" representedClassName="CourseList" syncable="YES" codeGenerationType="class">
+        <attribute name="course_name" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="courselist_id" optional="YES" attributeType="String" syncable="YES"/>
+        <relationship name="content" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ContentList" inverseName="course" inverseEntity="ContentList" syncable="YES"/>
+        <relationship name="subject" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Subject" inverseName="course" inverseEntity="Subject" syncable="YES"/>
+    </entity>
+    <entity name="LoginDetails" representedClassName="LoginDetails" syncable="YES" codeGenerationType="class">
+        <attribute name="created_at" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="dob" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="email" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="fb_id" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="password" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="prof_pic" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="rand_number" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="role_flag" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="twitter_id" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="updated_at" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="userID" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="username" optional="YES" attributeType="String" syncable="YES"/>
+    </entity>
+    <entity name="Quotes" representedClassName="Quotes" syncable="YES" codeGenerationType="class">
+        <attribute name="quotes" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="quotesID" optional="YES" attributeType="String" syncable="YES"/>
+    </entity>
+    <entity name="Subject" representedClassName="Subject" syncable="YES" codeGenerationType="class">
+        <attribute name="course_sub_id" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="sub_content" optional="YES" attributeType="String" syncable="YES"/>
+        <relationship name="course" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="CourseList" inverseName="subject" inverseEntity="CourseList" syncable="YES"/>
+        <relationship name="userSubject" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="User_Subject" inverseName="subject" inverseEntity="User_Subject" syncable="YES"/>
+    </entity>
+    <entity name="User_Subject" representedClassName="User_Subject" syncable="YES" codeGenerationType="class">
+        <attribute name="course_sub_id" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="users_content" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="users_id" optional="YES" attributeType="String" syncable="YES"/>
+        <relationship name="subject" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Subject" inverseName="userSubject" inverseEntity="Subject" syncable="YES"/>
+    </entity>
+    <elements>
+        <element name="Comment_Last" positionX="-351" positionY="309" width="128" height="150"/>
+        <element name="ContentList" positionX="-225" positionY="90" width="128" height="148"/>
+        <element name="CourseList" positionX="-20" positionY="95" width="128" height="103"/>
+        <element name="LoginDetails" positionX="-513" positionY="117" width="128" height="225"/>
+        <element name="Quotes" positionX="-459" positionY="-3" width="128" height="75"/>
+        <element name="Subject" positionX="18" positionY="278" width="128" height="103"/>
+        <element name="User_Subject" positionX="-171" positionY="293" width="128" height="103"/>
+    </elements>
+</model>

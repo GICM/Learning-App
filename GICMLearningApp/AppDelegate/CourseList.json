@@ -1,0 +1,43 @@
+
+  {
+  "comments": "",
+  "course_description": "Whether you're at school, at university or returning to education, our study skills courses will help you perform your best. Get study tips and careers advice to improve your employability, learning with the world's leading universities.",
+"course_title":"Study Skills",
+"thumbnail":"",
+"course_short_desc":"#consultant #job-seeker",
+  "course_list": [
+{
+              "course_name": "Critical Thinking",
+              "courselist_id": "1",
+              "sub_content": "",
+              },
+{
+              "course_name": "Writing Applications",
+              "courselist_id": "2",
+              "sub_content": "",
+              },
+{
+              "course_name": "Elementary",
+              "courselist_id": "3",
+              "sub_content": "",
+              },
+{
+              "course_name": "Pre-Intermediate",
+              "courselist_id": "4",
+              "sub_content": "",
+              },
+{
+              "course_name": "Learning and Collaborating",
+              "courselist_id": "5",
+              "sub_content": "",
+              },
+{
+              "course_name": "Reflecting and Sharing",
+              "courselist_id": "6",
+              "sub_content": "",
+              }
+              ]
+  }
+  
+
+

@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="14109" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14088"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="ValueAddedCell" rowHeight="80" id="KGk-i7-Jjw" customClass="ValueAddedCell" customModule="GICM" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="320" height="115"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="KGk-i7-Jjw" id="H2p-sc-9uM">
+                <rect key="frame" x="0.0" y="0.0" width="320" height="114.5"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Today" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="FmR-sa-9Oz">
+                        <rect key="frame" x="70" y="10" width="180" height="25"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="25" id="T2J-uU-qmK"/>
+                        </constraints>
+                        <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="17"/>
+                        <nil key="textColor"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nYJ-w4-cUN">
+                        <rect key="frame" x="255" y="32.5" width="50" height="50"/>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="50" id="0NB-1s-qiy"/>
+                            <constraint firstAttribute="height" constant="50" id="Dk6-IF-SfM"/>
+                        </constraints>
+                        <state key="normal" image="increase"/>
+                    </button>
+                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bgT-KF-79B">
+                        <rect key="frame" x="15" y="32.5" width="50" height="50"/>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="50" id="EhS-XX-qzD"/>
+                            <constraint firstAttribute="height" constant="50" id="Ygm-Te-kGv"/>
+                        </constraints>
+                        <state key="normal" image="DownAorrow"/>
+                    </button>
+                    <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="$5000" placeholder="Rate" textAlignment="center" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="nD8-cG-v0r">
+                        <rect key="frame" x="70" y="43" width="180" height="25"/>
+                        <nil key="textColor"/>
+                        <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="15"/>
+                        <textInputTraits key="textInputTraits" keyboardType="decimalPad"/>
+                        <connections>
+                            <outlet property="delegate" destination="KGk-i7-Jjw" id="kU4-D4-Ek9"/>
+                        </connections>
+                    </textField>
+                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="lQM-S6-rOK">
+                        <rect key="frame" x="78" y="76" width="164" height="30"/>
+                        <color key="backgroundColor" red="0.34811729192733765" green="0.35376518964767456" blue="0.71981924772262573" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <constraints>
+                            <constraint firstAttribute="width" constant="164" id="5ku-y8-kwI"/>
+                            <constraint firstAttribute="height" constant="30" id="yYK-4f-Qec"/>
+                        </constraints>
+                        <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="17"/>
+                        <state key="normal" title="Save">
+                            <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        </state>
+                        <userDefinedRuntimeAttributes>
+                            <userDefinedRuntimeAttribute type="number" keyPath="cornerRadius">
+                                <real key="value" value="15"/>
+                            </userDefinedRuntimeAttribute>
+                        </userDefinedRuntimeAttributes>
+                    </button>
+                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DCK-UW-z0z">
+                        <rect key="frame" x="70" y="10" width="180" height="25"/>
+                    </button>
+                </subviews>
+                <constraints>
+                    <constraint firstItem="DCK-UW-z0z" firstAttribute="width" secondItem="FmR-sa-9Oz" secondAttribute="width" id="4FC-iy-W58"/>
+                    <constraint firstItem="lQM-S6-rOK" firstAttribute="top" secondItem="nD8-cG-v0r" secondAttribute="bottom" constant="8" id="5gU-Mr-3Al"/>
+                    <constraint firstAttribute="trailing" secondItem="nYJ-w4-cUN" secondAttribute="trailing" constant="15" id="Adp-xB-Vo9"/>
+                    <constraint firstItem="FmR-sa-9Oz" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" constant="10" id="Blr-Yy-KQo"/>
+                    <constraint firstItem="lQM-S6-rOK" firstAttribute="centerX" secondItem="nD8-cG-v0r" secondAttribute="centerX" id="CsX-TD-0Yt"/>
+                    <constraint firstItem="nYJ-w4-cUN" firstAttribute="leading" secondItem="FmR-sa-9Oz" secondAttribute="trailing" constant="5" id="JaO-KK-yhf"/>
+                    <constraint firstItem="bgT-KF-79B" firstAttribute="centerY" secondItem="H2p-sc-9uM" secondAttribute="centerY" id="KpP-SH-xym"/>
+                    <constraint firstItem="nD8-cG-v0r" firstAttribute="width" secondItem="FmR-sa-9Oz" secondAttribute="width" id="Oso-80-vIw"/>
+                    <constraint firstItem="nD8-cG-v0r" firstAttribute="centerX" secondItem="FmR-sa-9Oz" secondAttribute="centerX" id="Pzh-h5-EpP"/>
+                    <constraint firstItem="nD8-cG-v0r" firstAttribute="height" secondItem="FmR-sa-9Oz" secondAttribute="height" id="SnF-ff-cXe"/>
+                    <constraint firstItem="bgT-KF-79B" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" constant="15" id="ZQb-zB-0Lx"/>
+                    <constraint firstItem="DCK-UW-z0z" firstAttribute="centerY" secondItem="FmR-sa-9Oz" secondAttribute="centerY" id="cmn-rW-FDi"/>
+                    <constraint firstItem="nYJ-w4-cUN" firstAttribute="centerY" secondItem="bgT-KF-79B" secondAttribute="centerY" id="flh-6C-9Rw"/>
+                    <constraint firstItem="DCK-UW-z0z" firstAttribute="height" secondItem="FmR-sa-9Oz" secondAttribute="height" id="iT7-eu-jvp"/>
+                    <constraint firstItem="DCK-UW-z0z" firstAttribute="centerX" secondItem="FmR-sa-9Oz" secondAttribute="centerX" id="oLe-K0-bCX"/>
+                    <constraint firstItem="nD8-cG-v0r" firstAttribute="top" secondItem="FmR-sa-9Oz" secondAttribute="bottom" constant="8" id="oP3-Bz-spG"/>
+                    <constraint firstItem="FmR-sa-9Oz" firstAttribute="leading" secondItem="bgT-KF-79B" secondAttribute="trailing" constant="5" id="zQD-S4-QLG"/>
+                </constraints>
+            </tableViewCellContentView>
+            <viewLayoutGuide key="safeArea" id="njF-e1-oar"/>
+            <connections>
+                <outlet property="btnDown" destination="bgT-KF-79B" id="jwg-aq-qh2"/>
+                <outlet property="btnSave" destination="lQM-S6-rOK" id="SiY-Xu-Ixv"/>
+                <outlet property="btnUp" destination="nYJ-w4-cUN" id="8Tf-0b-SfE"/>
+                <outlet property="btnValueAdded" destination="DCK-UW-z0z" id="L7G-Od-tTK"/>
+                <outlet property="lblDay" destination="FmR-sa-9Oz" id="iSZ-Ee-I1P"/>
+                <outlet property="txtRate" destination="nD8-cG-v0r" id="MSL-ii-iKV"/>
+            </connections>
+            <point key="canvasLocation" x="23" y="87"/>
+        </tableViewCell>
+    </objects>
+    <resources>
+        <image name="DownAorrow" width="45" height="45"/>
+        <image name="increase" width="45" height="45"/>
+    </resources>
+</document>
