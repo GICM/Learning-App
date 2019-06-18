@@ -11,6 +11,9 @@ import MobileCoreServices
 import Zip
 import FirebaseStorage
 import Instabug
+import AVFoundation
+import AVKit
+import GradientProgressBar
 
 let CALL_BACK_MAIL = "call4backup@ConsultingMastery.Institute"
 let CONTRIBUTION_MAIL = "contribution@consultingmastery.institute"
@@ -19,15 +22,20 @@ let CALL_BACK_MAIL_MAX_SIZE = 15000
 
 class SendCallBackVC: UIViewController,UIDocumentPickerDelegate,UIDocumentInteractionControllerDelegate,AVAudioRecorderDelegate{
     
+    @IBOutlet weak var lblWallet: UILabel!
     @IBOutlet weak var twReq: UITextView!
     @IBOutlet weak var lblTitle: UILabel!
-    @IBOutlet weak var btnAudio: UIButton!
-    @IBOutlet weak var btnVideo: UIButton!
-    @IBOutlet weak var btnEdit: UIButton!
-    @IBOutlet weak var btnDocs: UIButton!
+    @IBOutlet weak var imgAudio: UIImageView!
+    @IBOutlet weak var imgVideo: UIImageView!
+    @IBOutlet weak var imgEdit: UIImageView!
+    @IBOutlet weak var imgDocs: UIImageView!
     
+    @IBOutlet weak var btnWallet: UIButton!
     @IBOutlet weak var btnSubmit: UIButton!
     @IBOutlet weak var segmentCtrl: UISegmentedControl!
+    
+    @IBOutlet weak var progressView: UIProgressView!
+    
     
     var strTitle = ""
     var strMode = "Remote"
@@ -37,6 +45,7 @@ class SendCallBackVC: UIViewController,UIDocumentPickerDelegate,UIDocumentIntera
     var pathDocs : URL?
     // var pathDocsRoot : URL?
     var downloadURL : URL?
+    @IBOutlet weak var grad: GradientProgressBar!
     
     var strPathDocs  = ""
     var strPathDocsZip  = ""
@@ -63,12 +72,30 @@ class SendCallBackVC: UIViewController,UIDocumentPickerDelegate,UIDocumentIntera
     @IBOutlet weak var lblAudioTimer: UILabel!
     var totalRecordingTime = 0
     var pathFolder = ""
+    
+    
+    //wallet
+    @IBOutlet weak var vwWallet: UIView!
+    @IBOutlet weak var yContstraintButton: NSLayoutConstraint!
+    @IBOutlet weak var heightConstaint: NSLayoutConstraint!
+    var walletExpand = false
+    
+    
     override func viewDidLoad() {
+        
+        NSLog("***********************************************")
+        NSLog(" Ssend Call4 backup View did load  ")
+        
         super.viewDidLoad()
+        heightConstaint.constant = 0
+        yContstraintButton.constant = 0
+        vwWallet.isHidden = true
         
         self.vwComment.frame = self.view.frame
         self.vwComment.isHidden = true
         self.view.addSubview(self.vwComment)
+        
+
         
         self.viewAudio.frame = self.view.frame
         self.viewAudio.isHidden = true
@@ -89,6 +116,39 @@ class SendCallBackVC: UIViewController,UIDocumentPickerDelegate,UIDocumentIntera
         btnSubmit.alpha = 0.5
         NotificationCenter.default.post(name: Notification.Name("NotifyHideMenu"), object: nil, userInfo: nil)
         Utility.sharedInstance.isShowMenu = false
+    }
+    
+    func progressBarAnimation(){
+        
+        let gradientView = GradientView(frame: progressView.bounds)
+        
+        //convert gradient view to image , flip horizontally and assign as the track image
+        progressView.trackImage = UIImage(view: gradientView).withHorizontallyFlippedOrientation()
+        
+        //invert the progress view
+        progressView.transform = CGAffineTransform(scaleX: -1.0, y: -1.0)
+        progressView.progressTintColor = UIColor.init(red: 161.0/255.0, green: 161.0/255.0, blue: 161.0/255.0, alpha: 1.0)
+        
+        
+        let walletValue = UserDefaults.standard.string(forKey: "walletAmount") ?? "800"
+        self.lblWallet.text = " Wallet Balance: \(walletValue)"
+        let wallet = Float(walletValue) ?? 100.0
+        
+        
+        let progressbarValue = wallet/100.0
+        
+        self.progressView.progress = progressbarValue
+        
+        
+        
+        let  greenColor = UIColor.init(red: 63.0/255.0, green: 157.0/255.0, blue: 75.0/255.0, alpha: 1.0)
+        let  yellowColor = UIColor.init(red: 210.0/255.0, green: 231.0/255.0, blue: 50.0/255.0, alpha: 1.0)
+        
+        grad.progress = progressbarValue
+        progressView.tintColor = UIColor.init(red: 161.0/255.0, green: 161.0/255.0, blue: 161.0/255.0, alpha: 1.0)
+        grad.gradientColorList = [greenColor,.yellow]
+        
+        //  progressView.setProgress(progressbarValue, animated: true)
     }
     
     func sendMissedCallback(folPath :String)
@@ -170,6 +230,32 @@ class SendCallBackVC: UIViewController,UIDocumentPickerDelegate,UIDocumentIntera
         btnSubmit.alpha = 1.0
     }
     
+    @IBAction func walletAction(_ sender: Any) {
+        if walletExpand{
+            UIView.animate(withDuration: 1.0, animations: {
+                self.btnWallet.setImage(UIImage(named: "downWallet"), for: .normal)
+                self.heightConstaint.constant = 0
+                self.yContstraintButton.constant = 0
+                self.vwWallet.isHidden = true
+            }, completion: nil)
+            
+            
+            
+        }else{
+            
+            UIView.animate(withDuration: 1.0, animations: {
+                self.btnWallet.setImage(UIImage(named: "upWallet"), for: .normal)
+                self.heightConstaint.constant = 60
+                self.yContstraintButton.constant = 20
+                self.vwWallet.isHidden = false
+            }, completion: { finish in
+                self.progressBarAnimation()
+                
+            })
+        }
+        self.walletExpand.toggle()
+    }
+    
     @IBAction func comment(_ sender: Any) {
         BugReporting.invoke()
     }
@@ -186,7 +272,7 @@ class SendCallBackVC: UIViewController,UIDocumentPickerDelegate,UIDocumentIntera
         let trimmedString = strComment.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmedString.count > 0{
             self.vwComment.isHidden = true
-            self.btnEdit.isSelected = true
+            self.imgEdit.image = UIImage(named: "select")
             self.enableBtnSubmit()
         }
         else{
@@ -234,16 +320,17 @@ class SendCallBackVC: UIViewController,UIDocumentPickerDelegate,UIDocumentIntera
     }
     @objc func longTapAudio(sender : UIGestureRecognizer){
         if sender.state == .ended {
-            btnAudio.alpha = 1.0
+            imgAudio.alpha = 1.0
             self.stopRecording()
         }
         else if sender.state == .began {
-            btnAudio.alpha = 0.5
+            imgAudio.alpha = 0.5
             self.recordAudio()
         }
     }
     override func viewWillAppear(_ animated: Bool) {
         lblTitle.text = strTitle
+        self.progressBarAnimation()
     }
     
     override func didReceiveMemoryWarning() {
@@ -267,7 +354,7 @@ class SendCallBackVC: UIViewController,UIDocumentPickerDelegate,UIDocumentIntera
     
     func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool) {
         print("audio status: \(flag)")
-        btnAudio.isSelected = true
+        imgAudio.image = UIImage(named: "select")
         self.enableBtnSubmit()
     }
     
@@ -443,7 +530,6 @@ class SendCallBackVC: UIViewController,UIDocumentPickerDelegate,UIDocumentIntera
             "docs_size" : fileSize ,
             "docs_url" : downloadURL?.absoluteString ?? "",
             "doc_id" : pathFolder
-            
         ]
     }
     
@@ -501,6 +587,8 @@ class SendCallBackVC: UIViewController,UIDocumentPickerDelegate,UIDocumentIntera
                 msg = "<p>Hey,</br></br> Type: \(strTitle) </br> Mode: \(strMode) </br> Details: \(strDetails)\(contact) </br> </br> Please find the below attached file.</br></br></p>"
             }
             builder.htmlBody = msg
+            
+            
         }
         
         
@@ -543,16 +631,25 @@ class SendCallBackVC: UIViewController,UIDocumentPickerDelegate,UIDocumentIntera
                     
                     DispatchQueue.main.async(execute: {
                         NSLog("Error sending email: \(error.debugDescription)")
+                        
                         WebserviceManager.shared.hideMBProgress(view: self.view)
                     })
                     
                 } else {
                     NSLog("Successfully sent email!")
+                    //                    UserDefaults.standard.setUserName(value: "")
+                    //                    UserDefaults.standard.setEmail(value: "")
+                    //                    UserDefaults.standard.synchronize()
                     //                    Utility.sharedInstance.displayFailureAlertWithMessage(message: "Thank you. Your request will be passed to one of our expert advisors who will be in contact as soon as possible", title: "Success") { (showw) in
                     //                    }
                     DispatchQueue.main.async(execute: {
                         self.removeExistFile()
-                        self.navigationController?.popViewController(animated: true)
+                        
+                        //Update LeaderBoard Details
+                        self.addLeaderBoardAPI()
+
+                        
+                        //self.navigationController?.popViewController(animated: true)
                         Utilities.sharedInstance.showToast(message: (FirebaseManager.shared.toastMsgs.thank_call4back)!)
                     })
                     WebserviceManager.shared.hideMBProgress(view: self.view)
@@ -583,6 +680,7 @@ class SendCallBackVC: UIViewController,UIDocumentPickerDelegate,UIDocumentIntera
             }
         }
     }
+    
     //MARK: UIDocumentPickerDelegate
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentAt url: URL) {
         // Do something
@@ -591,7 +689,7 @@ class SendCallBackVC: UIViewController,UIDocumentPickerDelegate,UIDocumentIntera
         docsURL = fileDoc
         do {
             try  fileManager.copyItem(at: url, to: fileDoc)
-            self.btnDocs.isSelected = true
+            self.imgDocs.image = UIImage(named: "select")
             self.enableBtnSubmit();
             
         } catch {
@@ -637,7 +735,7 @@ extension SendCallBackVC : UIImagePickerControllerDelegate, UINavigationControll
             let fileImage = pathDocs!.appendingPathComponent("image.jpg")
             do {
                 try imageData?.write(to: fileImage)
-                self.btnDocs.isSelected = true
+                self.imgDocs.image = UIImage(named: "select")
                 self.enableBtnSubmit()
                 
             } catch {
@@ -664,9 +762,9 @@ extension SendCallBackVC : UIImagePickerControllerDelegate, UINavigationControll
                 try  fileManager.copyItem(at: url, to: fileVideo)
                 self.enableBtnSubmit()
                 if isAttach {
-                    self.btnDocs.isSelected = true
+                    self.imgDocs.image = UIImage(named: "select")
                 }else{
-                    self.btnVideo.isSelected = true
+                    self.imgVideo.image = UIImage(named: "select")
                 }
                 
             } catch {
@@ -728,6 +826,108 @@ extension SendCallBackVC : UIImagePickerControllerDelegate, UINavigationControll
 }
 
 
+
+
+// Add leader Board and Update Leader Board details
+extension SendCallBackVC{
+    //Create Wallet Bar Status
+    func addLeaderBoardJSON() -> [String: Any]{
+        let userId = UserDefaults.standard.getUserUUID()
+         let userName = UserDefaults.standard.getUserName().count == 0 ? "Anonymous" : UserDefaults.standard.getUserName()
+        let profile = UserDefaults.standard.getProfileImage()
+        let currentCompany = UserDefaults.standard.string(forKey: "CurrentCompany") ?? "Others"
+
+        
+        let emptyDict = ["totalScore": 1.0]
+        let dictEngagement = ["tracking": "0.0",
+                              "course": "0.0",
+                              "capture": "0.0",
+                              "meeting": "0.0",
+                              "weeklyPlanner": "0.0",
+            "totalScore": 0.0] as [String: Any]
+        let dict = ["user_id" : userId,
+                    "username" : userName ,
+                    "user_Picture" : profile ,
+                    "companyName" : currentCompany ,
+                    "Contribution" : emptyDict,
+                    "engagement" : dictEngagement] as [String : Any]
+        return dict
+    }
+    
+    func addLeaderBoardAPI(){
+        let ref = FirebaseManager.shared.firebaseDP!.collection("leaderBoard").whereField("user_id", isEqualTo: UserDefaults.standard.getUserUUID())
+        ref.getDocuments { (snapshot, error) in
+            if let snap = snapshot?.documents, snap.count > 0 {
+                let leaderModel = LeaderModel()
+                let leaderData = leaderModel.parseIntoLeaderModel(snap: snap)
+                print(leaderData.companyName ?? "")
+                // if exist update
+                let documentID = snap[0].documentID
+                let refExist = FirebaseManager.shared.firebaseDP!.collection("leaderBoard").document(documentID)
+                refExist.updateData(self.updateLeaderBoardJSON(model : leaderData), completion: { (error) in
+                    print("add career api error: \(String(describing: error?.localizedDescription))")
+                    Constants.appDelegateRef.timerLeader.invalidate()
+                })
+                
+                print("Already LeaderBord Amount Added")
+                Constants.appDelegateRef.timerLeader.invalidate()
+                self.navigationController?.popViewController(animated: true)
+                
+            }else{
+                // add
+                let refNew = FirebaseManager.shared.firebaseDP!.collection("leaderBoard")
+                refNew.addDocument(data: self.addLeaderBoardJSON(), completion: { (error) in
+                    if error != nil{
+                        print(error.debugDescription)
+                        Constants.appDelegateRef.timerLeader.invalidate()
+                        self.navigationController?.popViewController(animated: true)
+                    }
+                    else{
+                        Constants.appDelegateRef.timerLeader.invalidate()
+                        self.navigationController?.popViewController(animated: true)
+                    }
+                })
+            }
+        }
+    }
+    
+    // Update LeaderBoardDetails
+    func updateLeaderBoardJSON(model : LeaderModel)-> [String: Any]{
+        let userId = UserDefaults.standard.getUserUUID()
+         let userName = UserDefaults.standard.getUserName().count == 0 ? "Anonymous" : UserDefaults.standard.getUserName()
+        let profile: String? = UserDefaults.standard.getProfileImage() as? String ?? ""
+        let currentCompany = UserDefaults.standard.string(forKey: "CurrentCompany") ?? "Others"
+        
+        var strBase64 = ""
+        if let profileStr = profile, profileStr.count > 0{
+            let dataDecoded : Data = Data(base64Encoded: profileStr)!
+            let img = UIImage(data: dataDecoded)!
+            let imageData: Data! = UIImageJPEGRepresentation(img, 0.1)
+            strBase64 = imageData.base64EncodedString()
+        }else{
+            //  cell.imgApplying.image = UIImage(named: "noImage")
+        }
+        
+        let previousTotalScore = Float(model.contributionData?.totalScore ?? 0.0)
+        let total = previousTotalScore + 1.0
+        let changedTotalScore = Double(total).rounded(digits: 1)
+        
+        let dictContribution = ["totalScore": changedTotalScore]
+        let dictEngagement = ["tracking": "\(model.engagementData?.tracking ?? "0.0")",
+            "course": "\(model.engagementData?.course ?? "0.0")",
+            "capture": "\(model.engagementData?.capture ?? "0.0")",
+            "meeting": "\(model.engagementData?.meeting ?? "0.0")",
+            "weeklyPlanner": "\(model.engagementData?.weeklyPlanner ?? "0.0")",
+            "totalScore": model.engagementData?.totalScore ?? 0.0] as [String: Any]
+        let dict = ["user_id" : userId,
+                    "username" : userName ,
+                    "user_Picture" : strBase64 ,
+                    "companyName" : currentCompany ,
+                    "Contribution" : dictContribution,
+                    "engagement" : dictEngagement] as [String : Any]
+        return dict
+    }
+}
 
 
 

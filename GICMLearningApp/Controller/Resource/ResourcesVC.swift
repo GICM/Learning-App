@@ -49,6 +49,15 @@ class ResourcesVC: UIViewController ,MFMailComposeViewControllerDelegate, WKUIDe
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        NSLog("***********************************************")
+        NSLog(" Resourse Controller View did load  ")
+        
+        self.getResources()
+//        Firestore.firestore().disableNetwork { (error) in
+//            self.getResources()
+//        }
+        
+
         createCustomCommentInstance()
         // Do any additional setup after loading the view.
         self.title = "Resources"
@@ -58,9 +67,7 @@ class ResourcesVC: UIViewController ,MFMailComposeViewControllerDelegate, WKUIDe
         tblExpand.expandableTableViewDelegate = self
         tblExpand.expandableTableViewDataSource = self
         tblExpand.tableFooterView = UIView()
-        self.webViewConfig()
-        
-        self.getResources()
+       // self.webViewConfig()
         
     }
     
@@ -72,7 +79,9 @@ class ResourcesVC: UIViewController ,MFMailComposeViewControllerDelegate, WKUIDe
         refStorage.downloadURL(completion: {url,error in
            
             if error == nil{
-            print("URL \(url)")
+            NSLog("URL \(url)")
+                
+                ConnectionManager.connectionSharedInstance.downloadHTML(downLoadURL: url!)
                 var urlRequest = URLRequest(url: url!)
                 urlRequest.cachePolicy = .returnCacheDataElseLoad
                 self.webView.load(urlRequest)
@@ -80,22 +89,38 @@ class ResourcesVC: UIViewController ,MFMailComposeViewControllerDelegate, WKUIDe
             }})
     }
     
+    
+    func localResourcesFile(){
+        let nsDocumentDirectory = FileManager.SearchPathDirectory.documentDirectory
+        let nsUserDomainMask    = FileManager.SearchPathDomainMask.userDomainMask
+        let paths               = NSSearchPathForDirectoriesInDomains(nsDocumentDirectory, nsUserDomainMask, true)
+        if let dirPath          = paths.first
+        {
+            let imageURL = URL(fileURLWithPath: dirPath).appendingPathComponent("ResourceHTML.html")
+            //            let image    = UIImage(contentsOfFile: imageURL.path)
+            let requestObj = URLRequest(url: imageURL)
+            self.webView.load(requestObj)
+            // Do whatever you want with the image
+        }
+    }
+    
+    
     func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
-        print("Start to load")
+        NSLog("Start to load")
         webManager.showMBProgress(view: self.view)
         
     }
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        print("Finish to load")
+        NSLog("Finish to load")
         webManager.hideMBProgress(view: self.view)
     }
     
     func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping ((WKNavigationActionPolicy) -> Void)) {
-        print("webView:\(webView) decidePolicyForNavigationAction:\(navigationAction) decisionHandler:\(decisionHandler)")
+        NSLog("webView:\(webView) decidePolicyForNavigationAction:\(navigationAction) decisionHandler:\(decisionHandler)")
         
         let app = UIApplication.shared
         let url = navigationAction.request.url
-        print("Access \(String(describing: url?.scheme))")
+        NSLog("Access \(String(describing: url?.scheme))")
         webManager.showMBProgress(view: self.view)
         if url?.scheme == "tel"
         {
@@ -115,7 +140,7 @@ class ResourcesVC: UIViewController ,MFMailComposeViewControllerDelegate, WKUIDe
              decisionHandler(.allow)
         }
         //        if (url!.scheme == myScheme as String) && app.canOpenURL(url!) {
-        //            print("redirect detected..")
+        //            NSLog("redirect detected..")
         //            // intercepting redirect, do whatever you want
         //            app.openURL(url!) // open the original url
         //            decisionHandler(.cancel)
@@ -154,7 +179,7 @@ class ResourcesVC: UIViewController ,MFMailComposeViewControllerDelegate, WKUIDe
         do {
             dataDcos = try Data(contentsOf: URL.init(string: stringExcelPath)!)
         } catch {
-            print("Unable to load data: \(error)")
+            NSLog("Unable to load data: \(error)")
         }
         builder.htmlBody = msg
         do {
@@ -209,11 +234,10 @@ class ResourcesVC: UIViewController ,MFMailComposeViewControllerDelegate, WKUIDe
     func getResources(){
         
         let ref = FirebaseManager.shared.firebaseDP?.collection("resources")
-        ref?.getDocuments(completion: { (snapshot, error) in
+        ref?.getDocuments(completion: {(snapshot, error) in
             self.arrayResult.removeAll()
             if let snap = snapshot?.documents, snap.count > 0{
                 self.arrayResult += snap
-                
                 for obj in snap{
                     self.arraySectionTitle.append(obj.get("title") as? String ?? "")
                     if let subtitle = obj.get("subtitle") as? [String]{
@@ -258,6 +282,7 @@ class ResourcesVC: UIViewController ,MFMailComposeViewControllerDelegate, WKUIDe
                     }
                 }
             }
+            Firestore.firestore().enableNetwork(completion: nil)
         })
     }
     
@@ -331,7 +356,7 @@ class ResourcesVC: UIViewController ,MFMailComposeViewControllerDelegate, WKUIDe
 
 extension ResourcesVC: LUExpandableTableViewDataSource {
     func numberOfSections(in expandableTableView: LUExpandableTableView) -> Int {
-        return 3
+        return self.arraySectionTitle.count
     }
     
     func expandableTableView(_ expandableTableView: LUExpandableTableView, numberOfRowsInSection section: Int) -> Int {
@@ -371,9 +396,11 @@ extension ResourcesVC: LUExpandableTableViewDataSource {
             if indexPath.row == 0 {
                 cell.imgRightSideTop.tag = 1
                 cell.imgRightSideBottom.tag = 1
+                cell.textViewWidthContraint.constant = -45
             } else {
                 cell.imgRightSideTop.tag = 2
                 cell.imgRightSideBottom.tag = 2
+                cell.textViewWidthContraint.constant = 4
             }
             
         case 1:
@@ -383,17 +410,23 @@ extension ResourcesVC: LUExpandableTableViewDataSource {
             cell.imgRightSideTop.image = arrayRightSideTop[2]
             cell.imgRightSideBottom.image = arrayRightSideBottom[2]
             cell.txtvwDescription.text = arrayDescription[2]
+            
+            cell.textViewWidthContraint.constant = -45
+            
+            
             cell.imgRightSideTop.tag = 3
             cell.imgRightSideBottom.tag = 3
             
         case 2:
             cell.lblSubtitle.text = arraySubTitle[3]
             cell.lblsubSubtitle.text = arraySubItalic[3]
-            cell.imgLeftSide.sd_setImage(with: URL(string: arrayResult[3].get("icon_url") as? String ?? ""), placeholderImage: UIImage(named: "noImage"))
+            cell.imgLeftSide.sd_setImage(with: URL(string: arrayResult[2].get("icon_url") as? String ?? ""), placeholderImage: UIImage(named: "noImage"))
             cell.imgRightSideTop.image = arrayRightSideTop[3]
             cell.imgRightSideBottom.image = arrayRightSideBottom[3]
             cell.txtvwDescription.text = arrayDescription[3]
             cell.imgRightSideTop.tag = 4
+          
+            cell.textViewWidthContraint.constant = -45
             cell.imgRightSideBottom.tag = 4
         default:
             return cell
@@ -418,6 +451,10 @@ extension ResourcesVC: LUExpandableTableViewDataSource {
 // MARK: - LUExpandableTableViewDelegate
 
 extension ResourcesVC: LUExpandableTableViewDelegate {
+    func expandableTableView(_ expandableTableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        return 1
+    }
+    
     func expandableTableView(_ expandableTableView: LUExpandableTableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         /// Returning `UITableViewAutomaticDimension` value on iOS 9 will cause reloading all cells due to an iOS 9 bug with automatic dimensions
         
@@ -433,19 +470,19 @@ extension ResourcesVC: LUExpandableTableViewDelegate {
     // MARK: - Optional
     
     func expandableTableView(_ expandableTableView: LUExpandableTableView, didSelectRowAt indexPath: IndexPath) {
-        print("Did select cell at section \(indexPath.section) row \(indexPath.row)")
+        NSLog("Did select cell at section \(indexPath.section) row \(indexPath.row)")
     }
     
     func expandableTableView(_ expandableTableView: LUExpandableTableView, didSelectSectionHeader sectionHeader: LUExpandableTableViewSectionHeader, atSection section: Int) {
-        print("Did select cection header at section \(section)")
+        NSLog("Did select cection header at section \(section)")
     }
     
     func expandableTableView(_ expandableTableView: LUExpandableTableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        print("Will display cell at section \(indexPath.section) row \(indexPath.row)")
+        NSLog("Will display cell at section \(indexPath.section) row \(indexPath.row)")
     }
     
     func expandableTableView(_ expandableTableView: LUExpandableTableView, willDisplaySectionHeader sectionHeader: LUExpandableTableViewSectionHeader, forSection section: Int) {
-        print("Will display section header for section \(section)")
+        NSLog("Will display section header for section \(section)")
     }
     
 }

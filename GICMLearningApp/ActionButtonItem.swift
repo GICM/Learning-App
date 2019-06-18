@@ -36,7 +36,6 @@ open class ActionButtonItem: NSObject {
         get {
             return self.label.text!
         }
-        
         set {
             self.label.text = newValue
         }
@@ -54,7 +53,7 @@ open class ActionButtonItem: NSObject {
     fileprivate var image: UIImage!
     
     /// Size needed for the *view* property presente the item's content
-    fileprivate let viewSize = CGSize(width: 200, height: 35)
+    fileprivate let viewSize = CGSize(width: 35, height: 35)
     
     /// Button's size by default the button is 35x35
     fileprivate let buttonSize = CGSize(width: 35, height: 35)
@@ -86,41 +85,40 @@ open class ActionButtonItem: NSObject {
             self.button.setImage(unwrappedImage, for: UIControlState())
         }
                 
-        if let text = optionalTitle , text.trimmingCharacters(in: CharacterSet.whitespaces).isEmpty == false {
-            self.label = UILabel()
-            self.label.font = UIFont(name: "HelveticaNeue-Medium", size: 13)
-            self.label.textColor = UIColor.darkGray
-            self.label.textAlignment = .right
-            self.label.text = text
-            self.label.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(ActionButtonItem.labelTapped(_:))))
-            self.label.sizeToFit()
-            
-            self.labelBackground = UIView()
-            self.labelBackground.frame = self.label.frame
-            self.labelBackground.backgroundColor = UIColor.white
-            self.labelBackground.layer.cornerRadius = 3
-            self.labelBackground.layer.shadowOpacity = 0.8
-            self.labelBackground.layer.shadowOffset = CGSize(width: 0, height: 1)
-            self.labelBackground.layer.shadowRadius = 0.2
-            self.labelBackground.layer.shadowColor = UIColor.lightGray.cgColor
-            
-            // Adjust the label's background inset
-            self.labelBackground.frame.size.width = self.label.frame.size.width + backgroundInset.width
-            self.labelBackground.frame.size.height = self.label.frame.size.height + backgroundInset.height
-            self.label.frame.origin.x = self.label.frame.origin.x + backgroundInset.width / 2
-            self.label.frame.origin.y = self.label.frame.origin.y + backgroundInset.height / 2
-            
-            // Adjust label's background position
-            self.labelBackground.frame.origin.x = CGFloat(130 - self.label.frame.size.width)
-            self.labelBackground.center.y = self.view.center.y
-            self.labelBackground.addSubview(self.label)
-            
-            // Add Tap Gestures Recognizer
-            let tap = UITapGestureRecognizer(target: self, action: #selector(ActionButtonItem.labelTapped(_:)))
-            self.view.addGestureRecognizer(tap)
-            
-            self.view.addSubview(self.labelBackground)
-        }
+//        if let text = optionalTitle , text.trimmingCharacters(in: CharacterSet.whitespaces).isEmpty == false {
+//            self.label = UILabel()
+//            self.label.font = UIFont(name: "HelveticaNeue-Medium", size: 13)
+//            self.label.textColor = UIColor.darkGray
+//            self.label.textAlignment = .right
+//            self.label.text = text
+//            self.label.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(ActionButtonItem.labelTapped(_:))))
+//            self.label.sizeToFit()
+//
+//            self.labelBackground = UIView()
+//            self.labelBackground.frame = self.label.frame
+//            self.labelBackground.backgroundColor = UIColor.white
+//            self.labelBackground.layer.cornerRadius = 3
+//            self.labelBackground.layer.shadowOpacity = 0.8
+//            self.labelBackground.layer.shadowOffset = CGSize(width: 0, height: 1)
+//            self.labelBackground.layer.shadowRadius = 0.2
+//            self.labelBackground.layer.shadowColor = UIColor.lightGray.cgColor
+//
+//            // Adjust the label's background inset
+//            self.labelBackground.frame.size.width = self.label.frame.size.width + backgroundInset.width
+//            self.labelBackground.frame.size.height = self.label.frame.size.height + backgroundInset.height
+//            self.label.frame.origin.x = self.label.frame.origin.x + backgroundInset.width / 2
+//            self.label.frame.origin.y = self.label.frame.origin.y + backgroundInset.height / 2
+//
+//            // Adjust label's background position
+//            self.labelBackground.frame.origin.x = CGFloat(130 - self.label.frame.size.width)
+//            self.labelBackground.center.y = self.view.center.y
+//            self.labelBackground.addSubview(self.label)
+//
+//            // Add Tap Gestures Recognizer
+//            let tap = UITapGestureRecognizer(target: self, action: #selector(ActionButtonItem.labelTapped(_:)))
+//            self.view.addGestureRecognizer(tap)
+//            self.view.addSubview(self.labelBackground)
+//        }
         
         self.view.addSubview(self.button)
     }

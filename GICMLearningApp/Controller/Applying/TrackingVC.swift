@@ -10,9 +10,13 @@ import UIKit
 import Firebase
 import FirebaseFirestore
 import Instabug
+import AVKit
+import AVFoundation
 
 class TrackingVC: UIViewController,UITableViewDelegate,UITableViewDataSource{
     
+    var toolsContent = ""
+
     
     //MARK:- Initialization
     @IBOutlet weak var tblPopup: UITableView!
@@ -29,7 +33,7 @@ class TrackingVC: UIViewController,UITableViewDelegate,UITableViewDataSource{
     var strRelaxation   = ""
     var strSleep = ""
     
-    var arrHeaderName = ["Career","Work Life Balance","Project"]
+    var arrHeaderName = ["Are you happy with today?","Career","Work Life Balance","Project"]
     var arrPopUpData: Array<[String:Any]> = []
     var valueRate = 0
     var type = ""
@@ -58,21 +62,49 @@ class TrackingVC: UIViewController,UITableViewDelegate,UITableViewDataSource{
     var strPostingName = "Job Role"
     var PostingID = ""
     var trackingFb : QueryDocumentSnapshot?
-    
+    var strDailyStatus = ""
     
     //Comment
     var customCommentObj     : CustomCommentVC!
     var a = 0
+    var strDayStatus = ""
+    var strStatus = ""
+    
+    
+    // Video Player
+    let avPlayer = AVPlayer()
+    var avPlayerLayer: AVPlayerLayer!
+    
+    var isPlaying = false
+    var videoFullyPlayed = false
+    
+    @IBOutlet weak var btnPlayOption: UIButton!
+    @IBOutlet weak var twWeek: UITextView!
+    let publicbVideoURL = URL(string: "https://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4")
+    var isCheckBokSelected = false
+    var arrVideoList = [String]()
+    @IBOutlet var vwVideoPopUp: UIView!
+    @IBOutlet weak var vwPlayer: UIView!
+    @IBOutlet weak var btnSelect: UIButton!
     
     //MARK:- View Life Cycle
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        NSLog("***********************************************")
+        NSLog(" tracking Controller View did load  ")
+        
+        self.configUI()
+        NotificationCenter.default.addObserver(self, selector:#selector(self.playerDidFinishPlaying(note:)),name: NSNotification.Name.AVPlayerItemDidPlayToEndTime, object: avPlayer.currentItem)
+        
+        let appdelegateRef = Constants.appDelegateRef
+        appdelegateRef.timerLeader = Timer.scheduledTimer(timeInterval: 1, target: appdelegateRef, selector: #selector(appdelegateRef.calulateLeaderBoard), userInfo: nil, repeats: true)
+       // let appdelegateObj = Utility.
+        
         createCustomCommentInstance()
         // Do any additional setu p after loading the view.
         NotificationCenter.default.post(name: Notification.Name("NotifyHideMenu"), object: nil, userInfo: nil)
         Utility.sharedInstance.isShowMenu = false
-        self.configUI()
         
     }
     
@@ -91,6 +123,8 @@ class TrackingVC: UIViewController,UITableViewDelegate,UITableViewDataSource{
         tblTracking.dataSource = self
         tblTracking.contentInset = UIEdgeInsets.zero
         tblTracking.decelerationRate = UIScrollViewDecelerationRateFast
+        
+         tblTracking.register(UINib(nibName: "DailyReportCell", bundle: nil), forCellReuseIdentifier: "DailyReportCell")
         tblTracking.register(UINib(nibName: "ValueAddedCell", bundle: nil), forCellReuseIdentifier: "ValueAddedCell")
         tblTracking.register(UINib(nibName: "projectRateCell", bundle: nil), forCellReuseIdentifier: "projectRateCell")
         tblTracking.register(UINib(nibName: "CareerCell", bundle: nil), forCellReuseIdentifier: "CareerCell")
@@ -102,12 +136,19 @@ class TrackingVC: UIViewController,UITableViewDelegate,UITableViewDataSource{
     
     //MARK:- Local Methods
     func configUI(){
-        Firestore.firestore().disableNetwork { (error) in
-            self.getCompanyDetail()
-            self.projectListISLFirebase()
-            self.getTrackingFB()
+        
+        let showPopUp = UserDefaults.standard.bool(forKey: "isTrackingSelected")
+        if !showPopUp{
+            self.getTrackingVideoListFirebase()
+            self.playerConfigUI(strContent: self.toolsContent)
         }
-    }
+            Firestore.firestore().disableNetwork { (error) in
+                self.getCompanyDetail()
+                self.getDailyStatus()
+                self.projectListISLFirebase()
+                self.getTrackingFB()
+            }
+        }
     
     //MARK:- Button Action
     
@@ -117,7 +158,11 @@ class TrackingVC: UIViewController,UITableViewDelegate,UITableViewDataSource{
     }
     
     @IBAction func backAction(_ sender: Any) {
-        self.navigationController?.popViewController(animated: true)
+        let appde = Constants.appDelegateRef
+        print("Total Timer Value  \(appde.totalLeaderBoardTimerCount)")
+       self.addLeaderBoardAPI()
+
+        //self.navigationController?.popViewController(animated: true)
     }
     
     //Up Value rate
@@ -294,14 +339,9 @@ class TrackingVC: UIViewController,UITableViewDelegate,UITableViewDataSource{
         let work = Int(strWork)
         let relax = Int(strRelaxation)
         cell?.setBalancingImage(work: work ?? 0, relax: relax ?? 0)
-        
-        //        print(sender.value)
-        //        if let cell = sender.superview?.superview as? WorkLifeBalanceCell{
-        //            let value = Int((sender.value * 24) + 0.5)
-        //            strWork = "\(value)"
-        //            cell.lblWork.text = "\(value) hrs"
-        //        }
+
     }
+    
     @IBAction func sliderStressLevelAction(_ sender: UISlider) {
         
         print(sender.value)
@@ -312,14 +352,7 @@ class TrackingVC: UIViewController,UITableViewDelegate,UITableViewDataSource{
         strStress_level = "\(value)"
         let cell = tblTracking.cellForRow(at: cellIndexPath!) as? WorkCell
         cell?.lblStress.text = "\(value) hrs"
-        
-        //        print(sender.value)
-        //        if let cell = sender.superview?.superview as? WorkLifeBalanceCell{
-        //            let value = Int((sender.value * 24) + 0.5)
-        //            strStress_level = "\(value)"
-        //            cell.lblStress.text = "\(value) hrs"
-        //
-        //        }
+
     }
     @IBAction func sliderRelaxAction(_ sender: UISlider) {
         print(sender.value)
@@ -336,15 +369,6 @@ class TrackingVC: UIViewController,UITableViewDelegate,UITableViewDataSource{
         let work = Int(strWork)
         let relax = Int(strRelaxation)
         currentCell?.setBalancingImage(work: work ?? 0, relax: relax ?? 0)
-        
-        //        if let cell = sender.superview?.superview as? WorkLifeBalanceCell{
-        //            let value = Int((sender.value * 24) + 0.5)
-        //            strRelaxation = "\(value)"
-        //            cell.lblRelax.text = "\(value) hrs"
-        //
-        //        }
-        
-        
     }
     @IBAction func sliderSleepAction(_ sender: UISlider) {
         
@@ -357,12 +381,7 @@ class TrackingVC: UIViewController,UITableViewDelegate,UITableViewDataSource{
         strSleep = "\(value)"
         let cell = tblTracking.cellForRow(at: cellIndexPath!) as? WorkCell
         cell?.lblSleep.text = "\(value) hrs"
-        
-        //        if let cell = sender.superview?.superview as? WorkLifeBalanceCell{
-        //            let value = Int((sender.value * 24) + 0.5)
-        //            strSleep = "\(value)"
-        //            cell.lblSleep.text = "\(value) hrs"
-        //        }
+
     }
     
     //Value Added
@@ -409,8 +428,39 @@ class TrackingVC: UIViewController,UITableViewDelegate,UITableViewDataSource{
             self.addCareerFirebase()
         }
         self.vwPopup.isHidden = true
-        
         // removeAllSelected()
+    }
+    
+    
+    @objc func dailyStatus(sender: UIButton){
+        let pointInTable: CGPoint = sender.convert(sender.bounds.origin, to: self.tblTracking)
+        let cellIndexPath = self.tblTracking.indexPathForRow(at: pointInTable)
+        let cell = tblTracking.cellForRow(at: cellIndexPath!) as? DailyReportCell
+        uncheckAllImages(cell: cell!)
+        cell?.twCommentHeight.constant = 0.0
+        let tagValue = Int(sender.tag)
+        switch tagValue{
+        case 0:
+            self.strStatus = ""
+            self.strDailyStatus = "Yes"
+            cell?.imgYes.image = #imageLiteral(resourceName: "radio-btn-check")
+            cell?.twComments.isHidden = true
+        case 1:
+            cell?.twCommentHeight.constant = 60.0
+            cell?.imgNo.image = #imageLiteral(resourceName: "radio-btn-check")
+            self.strDailyStatus = "No"
+            cell?.twComments.isHidden = false
+        default:
+            print("Default")
+        }
+
+        self.updateDailyStatus()
+        self.tblTracking.reloadData()
+    }
+    
+    func uncheckAllImages(cell: DailyReportCell){
+        cell.imgYes.image = #imageLiteral(resourceName: "radio-btn-uncheck")
+        cell.imgNo.image = #imageLiteral(resourceName: "radio-btn-uncheck")
     }
     
     func removeAllSelected(){
@@ -418,11 +468,53 @@ class TrackingVC: UIViewController,UITableViewDelegate,UITableViewDataSource{
         self.strTotalPoints = 0
     }
     
+    //Fire base daily Status
+    func getDailyStatus(){
+        let ref = FirebaseManager.shared.firebaseDP!.collection("dailyStatus").whereField("userId", isEqualTo: userId)
+        ref.getDocuments(completion: { (snapshot, error) in
+            if let snap = snapshot?.documents, snap.count > 0 {
+                let myGoal = snap[0]
+                self.strStatus = myGoal["reason"] as? String ?? ""
+                self.strDailyStatus = myGoal["status"] as? String ?? ""
+                self.tblTracking.reloadData()
+            }else{
+                print("No Goal")
+            }
+        })
+    }
+    
+    //MARK:- Add Goal API
+    func getDailyStatusJSON() -> [String:Any]{
+        return ["reason"  : self.strStatus,
+                "status" : self.strDailyStatus ,
+                "userId" : UserDefaults.standard.getUserUUID()]
+    }
+    
+    func updateDailyStatus(){
+        let ref = FirebaseManager.shared.firebaseDP!.collection("dailyStatus").whereField("userId", isEqualTo: userId)
+        ref.getDocuments { (snapshot, error) in
+            if let snap = snapshot?.documents, snap.count > 0 {
+                // if exist update
+                let refExist = FirebaseManager.shared.firebaseDP!.collection("dailyStatus").document(snap[0].documentID)
+                refExist.updateData(self.getDailyStatusJSON(), completion: { (error) in
+                })
+            }
+            else{
+                // add
+                let refNew = FirebaseManager.shared.firebaseDP!.collection("dailyStatus")
+                refNew.addDocument(data: self.self.getDailyStatusJSON(), completion: { (error) in
+                })
+            }
+        }
+    }
+    
+    
+    
     //MARK:- Delegate methods
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if tableView == tblTracking{
             
-            if section == 2{  // Project list
+            if section == 3{  // Project list
                 return self.arrProjectList.count
             }else{
                 return 1
@@ -458,6 +550,16 @@ class TrackingVC: UIViewController,UITableViewDelegate,UITableViewDataSource{
             //                return cell
             //            }
             if indexPath.section == 0{
+                //Value Added
+                let cell = tableView.dequeueReusableCell(withIdentifier: "DailyReportCell", for: indexPath) as! DailyReportCell
+                print("Work on it")
+                cell.configUI(typeValue: self.strDailyStatus, strGoal: "\(self.strStatus)")
+                cell.selectionStyle = .none
+                cell.twComments.delegate = self
+                 cell.btnNo.addTarget(self, action: #selector(dailyStatus), for: .touchUpInside)
+                cell.btnYes.addTarget(self, action: #selector(dailyStatus), for: .touchUpInside)
+                return cell
+            }else if indexPath.section == 1{
                 //Career
                 let cell = tableView.dequeueReusableCell(withIdentifier: "CareerCell", for: indexPath) as! CareerCell
                 cell.selectionStyle = .none
@@ -467,22 +569,9 @@ class TrackingVC: UIViewController,UITableViewDelegate,UITableViewDataSource{
                 cell.btnCareerPlus.addTarget(self, action: #selector(plusCareer), for: .touchUpInside)
                 cell.btnCareerMinus.addTarget(self, action: #selector(minusCarrer), for: .touchUpInside)
                 cell.btnCareer.addTarget(self, action: #selector(TimeLineChartCareer), for: .touchUpInside)
-                //                cell.lblCarrerLevel.text = "Consulting Company : \(strCompanyName)"
-                //                setLadderButton(cell:cell)
-                //
-                //                let totalLaddarButtonWidth = CGFloat((arrayCareerLevel.count*100) + 30)
-                //                let screenWidth = self.view.frame.width
-                //                var extraSpaceForScroll:CGFloat = 0
-                //                if totalLaddarButtonWidth > screenWidth {
-                //                    extraSpaceForScroll = totalLaddarButtonWidth - screenWidth
-                //                } else {
-                //                    extraSpaceForScroll = 0
-                //                }
-                //                cell.constraintScrollWidth.constant = extraSpaceForScroll
-                
                 return cell
             }
-            else if indexPath.section == 1{
+            else if indexPath.section == 2{
                 //work life balance
                 let cell = tableView.dequeueReusableCell(withIdentifier: "WorkCell", for: indexPath) as! WorkCell
                 cell.selectionStyle = .none
@@ -506,26 +595,6 @@ class TrackingVC: UIViewController,UITableViewDelegate,UITableViewDataSource{
                 cell.sliderSleep.addTarget(self, action: #selector(self.sliderSleepAction(_:)), for: UIControlEvents.valueChanged)
                 cell.sliderStress.addTarget(self, action: #selector(self.sliderStressLevelAction(_:)), for: UIControlEvents.valueChanged)
                 cell.btnSave.addTarget(self, action: #selector(SaveWorkLifeBalance), for: .touchUpInside)
-                //                cell.selectionStyle = .none
-                //                cell.btnmultiLineChart.addTarget(self, action: #selector(workLifeBalance), for: .touchUpInside)
-                //                cell.lblWork.text = strWork + " hrs"
-                //                cell.lblRelax.text = strRelaxation + " hrs"
-                //                cell.lblSleep.text = strSleep + " hrs"
-                //                cell.lblStress.text = strStress_level + " hrs"
-                //
-                //                cell.sliderWork.value = (Float(strWork) ?? 0 )/24.0
-                //                cell.sliderStress.value = (Float(strStress_level) ?? 0)/24.0
-                //                cell.sliderRelax.value = (Float(strRelaxation) ?? 0)/24.0
-                //                cell.sliderSleep.value = (Float(strSleep) ?? 0) / 24.0
-                //
-                //                let work = Int(strWork)
-                //                let relax = Int(strRelaxation)
-                //                cell.setBalancingImage(work: work ?? 0, relax: relax ?? 0)
-                //                cell.sliderWork.addTarget(self, action: #selector(self.sliderWorkAction(_:)), for: UIControlEvents.valueChanged)
-                //                cell.sliderRelax.addTarget(self, action: #selector(self.sliderRelaxAction(_:)), for: UIControlEvents.valueChanged)
-                //                cell.sliderSleep.addTarget(self, action: #selector(self.sliderSleepAction(_:)), for: UIControlEvents.valueChanged)
-                //                cell.sliderStress.addTarget(self, action: #selector(self.sliderStressLevelAction(_:)), for: UIControlEvents.valueChanged)
-                //                cell.btnSave.addTarget(self, action: #selector(SaveWorkLifeBalance), for: .touchUpInside)
                 return cell
             }
             else {
@@ -572,10 +641,10 @@ class TrackingVC: UIViewController,UITableViewDelegate,UITableViewDataSource{
         if tableView == tblTracking{
             let cell = tableView.dequeueReusableCell(withIdentifier: "tractingHeaderCell") as! tractingHeaderCell
             cell.lblHeader.numberOfLines = 0
-            if section == 0{
+            if section == 1{
                 cell.lblHeader.text = "\(arrHeaderName[section]) as \(strPostingName) @ \(strCompanyName)"
             }
-            else if section == 2 && self.arrProjectList.count>0{
+            else if section == 3 && self.arrProjectList.count>0{
                 cell.lblHeader.text = "\(self.arrProjectList[0].project_name!) project"
             }
             else{
@@ -592,10 +661,10 @@ class TrackingVC: UIViewController,UITableViewDelegate,UITableViewDataSource{
         if tableView == tblTracking{
             if indexPath.section == 0{
                 print("Value Added Chart")
-                let story = UIStoryboard(name: "TrackingStoryBoard", bundle: nil)
-                let nextVC = story.instantiateViewController(withIdentifier: "ValueAddedChartVC") as! ValueAddedChartVC
-                nextVC.projectID = projectID
-                self.navigationController?.pushViewController(nextVC, animated: true)
+//                let story = UIStoryboard(name: "TrackingStoryBoard", bundle: nil)
+//                let nextVC = story.instantiateViewController(withIdentifier: "ValueAddedChartVC") as! ValueAddedChartVC
+//                nextVC.projectID = projectID
+//                self.navigationController?.pushViewController(nextVC, animated: true)
             }
         }
             //Pop up View
@@ -614,9 +683,15 @@ class TrackingVC: UIViewController,UITableViewDelegate,UITableViewDataSource{
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         if tableView == tblTracking{
-            if indexPath.section == 0 {
+            if indexPath.section == 0{
+                if self.strDailyStatus == "Yes" || self.strDailyStatus.isEmpty{
+                    return 100
+                }else{
+                    return 160
+               }
+            } else if indexPath.section == 1 {
                 return  180
-            } else if indexPath.section == 1  {
+            } else if indexPath.section == 2  {
                 return 340
             }
             else{
@@ -907,6 +982,7 @@ class TrackingVC: UIViewController,UITableViewDelegate,UITableViewDataSource{
             model.meeting_point_neg = obj["meeting_point_neg"] as? Int ?? 0
             arrProjectList.append(model)
         }
+    
     }
     
     func addMeetingAPIFirebase(){
@@ -1121,7 +1197,7 @@ class TrackingVC: UIViewController,UITableViewDelegate,UITableViewDataSource{
 }
 
 //MARK: - UITextFieldDelegate Methods
-extension TrackingVC : UITextFieldDelegate {
+extension TrackingVC : UITextFieldDelegate,UITextViewDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
         return true
@@ -1139,6 +1215,22 @@ extension TrackingVC : UITextFieldDelegate {
             valueRate = Int(textField.text!) ?? 0
             tblTracking.reloadData()
         }
+    }
+    
+    func textViewDidEndEditing(_ textView: UITextView) {
+        if textView.tag == 0{
+            strStatus = textView.text ?? ""
+            self.updateDailyStatus()
+        }
+    }
+    
+    func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
+        if text == "\n" {
+            strStatus = textView.text ?? ""
+            textView.resignFirstResponder()
+            return false
+        }
+        return true
     }
     
     func dismissKeyboard() {
@@ -1192,4 +1284,222 @@ extension TrackingVC: CommentDelegates{
 }
 
 
+// Add leader Board and Update Leader Board details
+extension TrackingVC{
+    //Create Wallet Bar Status
+    func addLeaderBoardJSON() -> [String: Any]{
+        let userId = UserDefaults.standard.getUserUUID()
+        let userName = UserDefaults.standard.getUserName().count == 0 ? "Anonymous" : UserDefaults.standard.getUserName()
 
+        let profile = UserDefaults.standard.getProfileImage()
+        let currentCompany = UserDefaults.standard.string(forKey: "CurrentCompany") ?? "Others"
+        
+        let minitues = Float(Constants.appDelegateRef.totalLeaderBoardTimerCount)/60.0
+        let score = minitues/30.0
+        
+        print("Score \(score)")
+        let emptyDict = ["totalScore": 0.0]
+        let dictEngagement = ["tracking": "\(score)",
+                             "course": "0.0",
+                             "capture": "0.0",
+                             "meeting": "0.0",
+                             "weeklyPlanner": "0.0",
+                             "totalScore": score] as [String: Any]
+        let dict = ["user_id" : userId,
+                    "username" : userName ,
+                    "user_Picture" : profile ,
+                    "companyName" : currentCompany ,
+                    "Contribution" : emptyDict,
+                    "engagement" : dictEngagement] as [String : Any]
+        return dict
+    }
+    
+    func addLeaderBoardAPI(){
+        let ref = FirebaseManager.shared.firebaseDP!.collection("leaderBoard").whereField("user_id", isEqualTo: UserDefaults.standard.getUserUUID())
+        ref.getDocuments { (snapshot, error) in
+            if let snap = snapshot?.documents, snap.count > 0 {
+                let leaderModel = LeaderModel()
+                let leaderData = leaderModel.parseIntoLeaderModel(snap: snap)
+                print(leaderData.companyName ?? "")
+                // if exist update
+                let documentID = snap[0].documentID
+                let refExist = FirebaseManager.shared.firebaseDP!.collection("leaderBoard").document(documentID)
+                refExist.updateData(self.updateLeaderBoardJSON(model : leaderData), completion: { (error) in
+                    print("add career api error: \(String(describing: error?.localizedDescription))")
+                    Constants.appDelegateRef.timerLeader.invalidate()
+                })
+                
+                print("Already LeaderBord Amount Added")
+                 Constants.appDelegateRef.timerLeader.invalidate()
+                self.navigationController?.popViewController(animated: true)
+                
+            }else{
+                // add
+                let refNew = FirebaseManager.shared.firebaseDP!.collection("leaderBoard")
+                refNew.addDocument(data: self.addLeaderBoardJSON(), completion: { (error) in
+                    if error != nil{
+                        print(error.debugDescription)
+                         Constants.appDelegateRef.timerLeader.invalidate()
+                    }
+                    else{
+                        Constants.appDelegateRef.timerLeader.invalidate()
+                        self.navigationController?.popViewController(animated: true)
+                    }
+                })
+            }
+        }
+    }
+    
+    // Update LeaderBoardDetails
+    func updateLeaderBoardJSON(model : LeaderModel)-> [String: Any]{
+        let userId = UserDefaults.standard.getUserUUID()
+        let userName = UserDefaults.standard.getUserName().count == 0 ? "Anonymous" : UserDefaults.standard.getUserName()
+        let profile: String? = UserDefaults.standard.getProfileImage() as? String ?? ""
+        let currentCompany = UserDefaults.standard.string(forKey: "CurrentCompany") ?? "Others"
+        
+        var strBase64 = ""
+        if let profileStr = profile, profileStr.count > 0{
+            let dataDecoded : Data = Data(base64Encoded: profileStr)!
+            let img = UIImage(data: dataDecoded)!
+            let imageData: Data! = UIImageJPEGRepresentation(img, 0.1)
+            strBase64 = imageData.base64EncodedString()
+        }else{
+          //  cell.imgApplying.image = UIImage(named: "noImage")
+        }
+        
+        let minitues = Float(Constants.appDelegateRef.totalLeaderBoardTimerCount)/60.0
+        let score = minitues/30.0
+        
+        let previousTotalScore = Float(model.engagementData?.totalScore ?? 0.0) ?? 0.0
+        let total = previousTotalScore + score
+        let changedTotalScore = Double(total).rounded(digits: 4)
+        
+        
+        let module = Float(model.engagementData?.tracking ?? "0.0") ?? 0.0
+        let moduleTotal = module + score
+        let finalScore = Double(moduleTotal).rounded(digits: 5)
+        
+        print("Score \(score)")
+        let dictContribution = ["totalScore": model.contributionData?.totalScore ?? 0.0]
+        let dictEngagement = ["tracking": "\(finalScore)",
+            "course": "\(model.engagementData?.course ?? "0.0")",
+            "capture": "\(model.engagementData?.capture ?? "0.0")",
+            "meeting": "\(model.engagementData?.meeting ?? "0.0")",
+            "weeklyPlanner": "\(model.engagementData?.weeklyPlanner ?? "0.0")",
+            "totalScore": changedTotalScore] as [String: Any]
+        let dict = ["user_id" : userId,
+                    "username" : userName ,
+                    "user_Picture" : strBase64 ,
+                    "companyName" : currentCompany ,
+                    "Contribution" : dictContribution,
+                    "engagement" : dictEngagement] as [String : Any]
+        return dict
+    }
+}
+
+//
+extension Double {
+    func rounded(digits: Int) -> Double {
+        let multiplier = pow(10.0, Double(digits))
+        return (self * multiplier).rounded() / multiplier
+    }
+}
+
+
+// Video Player
+extension TrackingVC{
+    //MARK:- API Integation
+    //MARK:- API Integation
+    func getTrackingVideoListFirebase(){
+        
+        let ref = FirebaseManager.shared.firebaseDP!.collection("ToolsSplash").whereField("toolsName", isEqualTo: "Tracking")
+        ref.getDocuments { (snapshot, error) in
+            if let snap = snapshot?.documents, snap.count > 0
+            {
+                self.parseTrackingModel(snap: snap)
+            }
+        }
+    }
+    
+    
+    func parseTrackingModel(snap:[QueryDocumentSnapshot]){
+        for obj in snap{
+            let videoURL = obj["videoURL"] as? [String] ?? []
+            let toolsContent = obj["toolsContent"] as? String ?? ""
+            let toolsTitle = obj["toolsTitle"] as? String ?? ""
+            self.toolsContent = toolsContent
+            arrVideoList = videoURL
+            print(arrVideoList)
+        }
+        self.playerConfigUI(strContent: self.toolsContent)
+    }
+    
+    func playerConfigUI(strContent: String){
+        self.vwVideoPopUp.frame = self.view.frame
+        self.view.addSubview(self.vwVideoPopUp)
+        avPlayerLayer = AVPlayerLayer(player: avPlayer)
+        avPlayerLayer.frame =  vwPlayer.bounds
+        avPlayerLayer.frame.size.width =  self.view.frame.width - 10
+        avPlayerLayer.videoGravity = AVLayerVideoGravity.resizeAspectFill
+        vwPlayer.layer.insertSublayer(avPlayerLayer, at: 0)
+        self.vwPlayer.layoutIfNeeded()
+        
+        var videoURL = publicbVideoURL
+        if arrVideoList.count > 0{
+            let url = URL(string: arrVideoList[0])
+            videoURL = url ?? self.publicbVideoURL
+        }
+        let playerItem = AVPlayerItem(url: videoURL!)
+        avPlayer.replaceCurrentItem(with: playerItem)
+        
+        self.twWeek.text = "\(strContent)"
+        //  avPlayer.play()
+    }
+    
+    @IBAction func palyORPause(_ sender: Any) {
+        videoPlayOrPauseAction()
+    }
+    
+    @IBAction func playanPause(_ sender: Any) {
+        videoPlayOrPauseAction()
+    }
+    
+    @objc func playerDidFinishPlaying(note: NSNotification){
+        print("Video Finished")
+        videoFullyPlayed = true
+        btnPlayOption.isHidden = false
+        btnPlayOption.setImage(#imageLiteral(resourceName: "videoPlay"), for: .normal)
+    }
+    
+    //Play or Pause
+    func videoPlayOrPauseAction(){
+        
+        let player = AVPlayer(url: publicbVideoURL!)
+        let playerViewController = AVPlayerViewController()
+        playerViewController.player = player
+        self.present(playerViewController, animated: true) {
+            playerViewController.player!.play()
+        }
+    }
+    
+    @IBAction func okAction(_ sender: Any) {
+        
+        if self.btnSelect.currentImage == #imageLiteral(resourceName: "check"){
+            UserDefaults.standard.set(true, forKey: "isTrackingSelected")
+            UserDefaults.standard.synchronize()
+            self.vwVideoPopUp.isHidden = true
+        }else{
+            self.vwVideoPopUp.isHidden = true
+        }
+        self.projectListISLFirebase()
+    }
+    
+    @IBAction func donotShowAction(_ sender: Any) {
+        isCheckBokSelected = !isCheckBokSelected
+        if isCheckBokSelected{
+            self.btnSelect.setImage(#imageLiteral(resourceName: "check"), for: .normal)
+        }else{
+            self.btnSelect.setImage(#imageLiteral(resourceName: "unCheck"), for: .normal)
+        }
+    }
+}

@@ -18,6 +18,7 @@ class ResourceDescriptionCell: UITableViewCell {
     @IBOutlet weak var constraintTopSubtitle: NSLayoutConstraint!
     @IBOutlet weak var imgLeftSide: UIImageView!
     @IBOutlet weak var lblSubtitle: UILabel!
+    @IBOutlet weak var textViewWidthContraint: NSLayoutConstraint!
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code

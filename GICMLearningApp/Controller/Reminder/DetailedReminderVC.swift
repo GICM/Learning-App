@@ -15,9 +15,9 @@ import FirebaseStorage
 import Firebase
 
 
-class DetailedReminderVC: UIViewController{
+class DetailedReminderVC: UIViewController, UIGestureRecognizerDelegate{
     @IBOutlet weak var segementArrivalOrDeparture: UISegmentedControl!
-    
+    @IBOutlet weak var lblBreathReset: UILabel!
     @IBOutlet weak var txtTitle: UITextField!
     @IBOutlet weak var btnTitle: UIButton!
     @IBOutlet weak var datePicker: UIDatePicker!
@@ -68,8 +68,21 @@ class DetailedReminderVC: UIViewController{
     var indexValue = 0
     var isStatic : Bool = false
     
+    
+    var customPickerObj = CustomPicker()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        
+        NSLog("***********************************************")
+        NSLog("detailed  Reminder   Controller View did load  ")
+        
+        let tap = UITapGestureRecognizer(target: self, action: #selector(breathReset))
+        tap.delegate = self
+        self.lblBreathReset.isUserInteractionEnabled = true
+        self.lblBreathReset.addGestureRecognizer(tap)
+        
         self.configUI()
     }
     
@@ -94,9 +107,17 @@ class DetailedReminderVC: UIViewController{
             isArriving = false
         }
     }
+    
+    // Breath Reset Option
+    @objc func breathReset(_ gesture: UITapGestureRecognizer){
+         let arrBreathReset = ["arms behind head and back","timer 1/2 time beep and end beep","close eyes","relax sounds during exercise"]
+        self.listOfCompany(listData: arrBreathReset)
+    }
+    
     //MARK:- Local Methods
     func configUI(){
         // Do any additional setup after loading the view.
+        createCustomPickerInstance()
         btnSelectLocation.titleLabel?.numberOfLines = 0
          let button = UIButton()
         circularIdentifier = self.reminderTitle + "location"
@@ -141,7 +162,6 @@ class DetailedReminderVC: UIViewController{
         } else {
             enableTimeView() //Initially
         }
-        
         self.setWeekButtons(view: stackTime, states: arrayTimeDaysState)
         self.setWeekButtons(view: stackTransit, states: arrayTransitDaysState)
         self.setWeekButtons(view: stackLocation, states: arrayLocationDaysState)
@@ -211,7 +231,7 @@ class DetailedReminderVC: UIViewController{
     
     func addandEditReminder(){
         if fromVC == "edit"{
-            editReminderAPIFirebase()
+            self.editReminderAPIFirebase()
         }else{
             self.addReminderFireBase()
         }
@@ -234,13 +254,17 @@ class DetailedReminderVC: UIViewController{
             if txtTitle.text == "Project Tracking:" {
                 subtitle = "Track your project(s)"
                 body = "Visualize where you stand"
-            }
-            else{
+            }else if txtTitle.text == "Week Preparation:"{
                 subtitle = "Prepare your week"
                 body = "Preparation is everything to maximize your impact"
             }
+            else{
+                subtitle = "In-Transit:"
+                body = txtViewTrnasit.text
+            }
         }
         else{
+            
             if strType == "0"{
                 subtitle = "Prepare your week"
                 body = "Preparation is everything to maximize your impact"
@@ -266,6 +290,7 @@ class DetailedReminderVC: UIViewController{
                     "isTime":isTime,
                     "isStatic":isStatic,
                     "type":strType,
+                    "time_last": "0",
                     "isArriving":isArriving,
                     "repeatEveryState":strType == "2" ? arrayTransitDaysState : isTime ? arrayTimeDaysState : arrayLocationDaysState,
                     "subtitle":subtitle,
@@ -279,11 +304,22 @@ class DetailedReminderVC: UIViewController{
     func addReminderFireBase(){
         let ref = FirebaseManager.shared.firebaseDP?.collection("reminder")
         ref?.addDocument(data: self.getAddReminderNotification(), completion: { (error) in
-            FirebaseManager.shared.updateReminderID {
-                self.navigationController?.popViewController(animated: true)
-                self.triggerReminder()
+            if error == nil{
+                FirebaseManager.shared.updateReminderID {
+                    self.navigationController?.popViewController(animated: true)
+                    self.triggerReminder()
+                }
+            }else{
+                Utilities.displayFailureAlertWithMessage(title: "Attention!", message: "Add failed try again later", controller: self)
             }
         })
+        
+        
+        // Offline
+        FirebaseManager.shared.updateReminderID {
+            self.navigationController?.popViewController(animated: true)
+            self.triggerReminder()
+        }
     }
     
     func editReminderAPIFirebase(){
@@ -297,10 +333,13 @@ class DetailedReminderVC: UIViewController{
             else
             {
                 Utilities.displayFailureAlertWithMessage(title: "Attention!", message: "Update failed try again later", controller: self)
-               
             }
-            WebserviceManager.shared.hideMBProgress(view:self.view)
+       //     WebserviceManager.shared.hideMBProgress(view:self.view)
         })
+        
+        // Offline
+        self.navigationController?.popViewController(animated: true)
+        self.triggerReminder()
     }
     
     @IBAction func addReminder(_ sender: Any) {
@@ -314,7 +353,7 @@ class DetailedReminderVC: UIViewController{
             }
             return
         }
-        WebserviceManager.shared.showMBProgress(view:self.view)
+      //  WebserviceManager.shared.showMBProgress(view:self.view)
         self.addandEditReminder()
     }
     
@@ -441,7 +480,6 @@ extension DetailedReminderVC: UNUserNotificationCenterDelegate {
     //This is key callback to present notification while the app is in foreground
     @available(iOS 10.0, *)
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-        
         print("Notification being triggered")
         // completionHandler( [.alert,.sound,.badge])
         
@@ -449,7 +487,7 @@ extension DetailedReminderVC: UNUserNotificationCenterDelegate {
         //  to distinguish between notifications
         if notification.request.identifier == requestIdentifier{
             
-            completionHandler( [.alert,.sound,.badge])
+            completionHandler([.alert,.sound,.badge])
         }
     }
 }
@@ -458,4 +496,43 @@ extension DetailedReminderVC:UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         return true
     }
+}
+
+
+extension DetailedReminderVC: CustomPickerDelegate{
+    func createCustomPickerInstance(){
+        customPickerObj = Utilities.getCustomPickerInstance()
+        customPickerObj.delegate = self
+    }
+    
+    func listOfCompany(listData : [String]){
+        customPickerObj.totalComponents = 1
+        customPickerObj.arrayComponent = listData
+        addCustomPicker()
+        customPickerObj.loadCustomPicker(pickerType: CustomPickerType.e_PickerType_String)
+        customPickerObj.customPicker.reloadAllComponents()
+    }
+    
+    func addCustomPicker() {
+        self.view.addSubview(customPickerObj.view)
+        self.customPickerObj.vwBaseView.frame.size.height = self.view.frame.size.height
+        self.customPickerObj.vwBaseView.frame.size.width = self.view.frame.size.width
+    }
+    
+    func removeCustomPicker(){
+        if customPickerObj != nil{
+            customPickerObj.view.removeFromSuperview()
+        }
+    }
+    
+    func itemPicked(item: AnyObject) {
+        let picketValue = item as! String
+        self.lblBreathReset.text = "\(picketValue)"
+        removeCustomPicker()
+    }
+    
+    func pickerCancelled(){
+        removeCustomPicker()
+    }
+    
 }

@@ -19,9 +19,15 @@ class AddProjectVC: UIViewController {
     @IBOutlet weak var imgProject: UIImageView!
     @IBOutlet weak var btnAdd: UIButton!
     
+    
+    @IBOutlet weak var twCategory: UITextView!
+    @IBOutlet weak var txtCategory: UITextField!
     //Custom Picker Instance variable
     var customPickerObj : CustomPicker!
     var selectedPicker  = ""
+    
+    
+    @IBOutlet var vwCategory: UIView!
     
     //Param for add
     var projectName = ""
@@ -36,13 +42,22 @@ class AddProjectVC: UIViewController {
     //MARK:- View Life Cycle
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        
+        NSLog("***********************************************")
+        NSLog(" Add Project Controller View did load  ")
+        
+        self.vwCategory.frame = self.view.frame
+        self.vwCategory.isHidden = true
+        self.view.addSubview(self.vwCategory)
         // Do any additional setup after loading the view.
         NotificationCenter.default.post(name: Notification.Name("NotifyHideMenu"), object: nil, userInfo: nil)
         Utility.sharedInstance.isShowMenu = false
     }
     
     override func viewDidDisappear(_ animated: Bool) {
-        Utility.sharedInstance.isShowMenu = true
+        
+      Utility.sharedInstance.isShowMenu = true
     }
 
     override func didReceiveMemoryWarning() {
@@ -51,11 +66,8 @@ class AddProjectVC: UIViewController {
     }
     
     override func viewWillAppear(_ animated: Bool) {
-        self.navigationController?.isNavigationBarHidden = false
         configUI()
     }
-    
-   
     
     //MARK:- Local Methods
     func configUI(){
@@ -64,6 +76,7 @@ class AddProjectVC: UIViewController {
         Utilities.leftGapView(txtClientName)
         Utilities.leftGapView(txtStartDate)
         Utilities.leftGapView(txtEndDAte)
+        Utilities.leftGapView(txtCategory)
         
         if fromVC == "edit"{
             txtProjectName.text = projectModelObj.project_name
@@ -75,7 +88,6 @@ class AddProjectVC: UIViewController {
                 let dataDecoded : Data = Data(base64Encoded: profileStr)!
                 imgProject.image = UIImage(data: dataDecoded)
             }
-           
             btnAdd.setTitle("Update", for: .normal)
         }
     }
@@ -112,13 +124,37 @@ class AddProjectVC: UIViewController {
     
     //MARK:- API
     func getAddProjectJSON() -> [String:Any]{
+        
+        
+        let len = 16
+        let randomNumber = Array("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890")
+        let weeklyPlannerID = String((0..<len).map{ _ in randomNumber[Int(arc4random_uniform(UInt32(randomNumber.count)))]})
+        print(weeklyPlannerID)
+        
+        let emptyArray = ["","","","",""]
+        let dict = ["id" : weeklyPlannerID,
+                    "WorkStream" : "Default",
+                    "Meetings":emptyArray,
+                    "Research" : emptyArray,
+                    "userName" : "ME",
+                    "Deliverable" : emptyArray,
+                    "relation":"",
+                    "Travel" : "",
+                    "isNotStatic" : false,
+                    "packed": "0"] as [String : Any]
+        
         return ["project_name" : projectName,
                 "client_name"  : clientName,
                 "start_date" : startDate,
                 "end_date" :endDate ,
                 "project_image" : strBase64,
                 "user_id" : UserDefaults.standard.getUserUUID(),
-                "project_id" : "0"]
+                "project_id" : "0",
+                "workStreamData" : [dict],
+                "goal" : "",
+                "excercise": "",
+                "meTime" : "8",
+                "sleep" : "17"]
     }
     
     //MARK: - Add Project
@@ -131,9 +167,10 @@ class AddProjectVC: UIViewController {
             else
             {
                 self.updateProjectID()
-                Utilities.showSuccessFailureAlertWithDismissHandler(title: "success!", message: "Project has created successfully", controller: self, alertDismissed: { (_) in
-                    self.navigationController?.popViewController(animated: true)
-                })
+                self.navigationController?.popViewController(animated: true)
+//                Utilities.showSuccessFailureAlertWithDismissHandler(title: "success!", message: "Project has created successfully", controller: self, alertDismissed: { (_) in
+//
+//                })
             }
         })
     }
@@ -147,14 +184,17 @@ class AddProjectVC: UIViewController {
             }
         }
     }
+    
+    
     func editProjectAPIFirebase(){
         let ref = FirebaseManager.shared.firebaseDP!.collection("projects").document(projectModelObj.project_id!)
         ref.updateData(self.editProjectJSON(), completion: { (error) in
             print("Edit project Detail Error: \(String(describing: error))")
             if error == nil{
-                Utilities.showSuccessFailureAlertWithDismissHandler(title: "success!", message: "Updated Successfully", controller: self, alertDismissed: { (_) in
-                    self.navigationController?.popViewController(animated: true)
-                })
+                self.navigationController?.popViewController(animated: true)
+//                Utilities.showSuccessFailureAlertWithDismissHandler(title: "success!", message: "Updated Successfully", controller: self, alertDismissed: { (_) in
+//                    self.navigationController?.popViewController(animated: true)
+//                })
             }
             else
             {
@@ -221,7 +261,12 @@ extension AddProjectVC : UITextFieldDelegate {
     }
     
     func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
-        if textField == txtStartDate {
+        if textField == txtCategory{
+            selectedPicker = "category"
+            let arrCategory = ["Professional","Private","Entrepreneur","Career","Personal Branding","Vacation","Other"]
+            listOfCompany(listData: arrCategory)
+            return false
+        }else if textField == txtStartDate {
             selectedPicker = "start"
             dismissKeyboard()
             self.dateOfBirthAction(setMinDate: false)
@@ -249,6 +294,11 @@ extension AddProjectVC : UITextFieldDelegate {
 
 //MARK:- CustomPicker Methods
 extension AddProjectVC :CustomPickerDelegate {
+    func pickerCancelled(){
+        removeCustomPicker()
+        selectedPicker = ""
+    }
+    
     func createCustomPickerInstance(){
         customPickerObj = Utilities.getCustomPickerInstance()
         customPickerObj.delegate = self
@@ -290,28 +340,45 @@ extension AddProjectVC :CustomPickerDelegate {
     
     func itemPicked(item: AnyObject) {
         removeCustomPicker()
-        let pickerDateValue = item as! Date
-        let dateFormatObj = DateFormatter()
-        dateFormatObj.dateFormat = "dd/MM/yyyy"
-        dateFormatObj.locale = Locale(identifier: "en-US")
         
         if selectedPicker == "start"{
+            let pickerDateValue = item as! Date
+            let dateFormatObj = DateFormatter()
+            dateFormatObj.dateFormat = "dd/MM/yyyy"
+            dateFormatObj.locale = Locale(identifier: "en-US")
             let strDate =  dateFormatObj.string(from: pickerDateValue)
             txtStartDate.text = strDate
             startDate = strDate
             txtEndDAte.text = ""
-        }
-        else if selectedPicker == "end"{
+        }else if selectedPicker == "end"{
+            let pickerDateValue = item as! Date
+            let dateFormatObj = DateFormatter()
+            dateFormatObj.dateFormat = "dd/MM/yyyy"
+            dateFormatObj.locale = Locale(identifier: "en-US")
             let strDate =  dateFormatObj.string(from: pickerDateValue)
             txtEndDAte.text = strDate
+        }else{
+            let pickerDateValue = item as! String
+            print(pickerDateValue)
+            let  strCategory = pickerDateValue
+            self.txtCategory.text = strCategory
+            if strCategory == "Other"{
+                self.vwCategory.isHidden = false
+            }
         }
         selectedPicker = ""
+        }
+    
+    func listOfCompany(listData : [String]){
+        customPickerObj.totalComponents = 1
+        customPickerObj.arrayComponent = listData
+        addCustomPicker()
+        customPickerObj.loadCustomPicker(pickerType: CustomPickerType.e_PickerType_String)
+        customPickerObj.customPicker.reloadAllComponents()
     }
-    func pickerCancelled(){
-        removeCustomPicker()
-        selectedPicker = ""
+    
     }
-}
+
 
 //MARK: - UIImagePickerControllerDelegate Methods
 extension AddProjectVC : UIImagePickerControllerDelegate, UINavigationControllerDelegate{
@@ -373,3 +440,19 @@ extension AddProjectVC : UIImagePickerControllerDelegate, UINavigationController
     }
 }
 
+
+
+extension AddProjectVC{
+    @IBAction func cancelCategory(sender: UIButton){
+            vwCategory.isHidden = true
+    }
+    
+    @IBAction func saveCategory(sender: UIButton){
+        
+            vwCategory.isHidden = true
+            vwCategory.isHidden = true
+            self.txtCategory.text = self.twCategory.text
+            self.twCategory.text = ""
+
+    }
+}

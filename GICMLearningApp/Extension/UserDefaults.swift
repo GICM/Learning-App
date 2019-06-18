@@ -82,7 +82,6 @@ extension UserDefaults{
     func getEmail() ->String{
         return UserDefaults.standard.string(forKey: UserDefaultsKeys.email.rawValue) ?? ""
     }
-  
    
     
   //MARK: Save ProfileImage
@@ -95,6 +94,26 @@ extension UserDefaults{
   func getProfileImage() -> String{
     return UserDefaults.standard.string(forKey: UserDefaultsKeys.profilImage.rawValue) ?? ""
   }
+    
+    
+    // MARK:- Intransit Notification
+    func setIntrasitLastTimeTrigger(value: String) {
+        set(value, forKey: "IntrasitLastTimeTrigger")
+    }
   
+    func getIntrasitLastTimeTrigger() -> String{
+        return UserDefaults.standard.string(forKey: "IntrasitLastTimeTrigger") ?? ""
+    }
+    
+    
+    // MARK:- Intransit Notification
+    func setIntrasitTriggered(value: Bool) {
+        set(value, forKey: "IntrasitTriggered")
+    }
+    
+    func getIntrasitTriggered() -> Bool{
+        return UserDefaults.standard.bool(forKey: "IntrasitTriggered")
+    }
+    
 }
 

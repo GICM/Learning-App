@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="14113" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina4_0" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14088"/>
-        <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14490.49"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -20,34 +20,34 @@
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="SubTitle" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="s5O-Uy-txm">
-                        <rect key="frame" x="132" y="5.5" width="56.5" height="17"/>
-                        <fontDescription key="fontDescription" type="boldSystem" pointSize="14"/>
+                        <rect key="frame" x="128.5" y="5" width="63.5" height="19.5"/>
+                        <fontDescription key="fontDescription" type="boldSystem" pointSize="16"/>
                         <nil key="textColor"/>
                         <nil key="highlightedColor"/>
                     </label>
                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Powerpoint/Excel plugin" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="c2y-gf-8u2">
-                        <rect key="frame" x="87" y="24.5" width="146" height="16"/>
-                        <fontDescription key="fontDescription" type="italicSystem" pointSize="13"/>
+                        <rect key="frame" x="77.5" y="26.5" width="165" height="18"/>
+                        <fontDescription key="fontDescription" type="italicSystem" pointSize="15"/>
                         <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <nil key="highlightedColor"/>
                     </label>
                     <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="noImage" translatesAutoresizingMaskIntoConstraints="NO" id="7fj-JN-RB5">
-                        <rect key="frame" x="5" y="13.5" width="50" height="50"/>
+                        <rect key="frame" x="5" y="13" width="50" height="50"/>
                         <constraints>
                             <constraint firstAttribute="width" secondItem="7fj-JN-RB5" secondAttribute="height" id="XP4-BW-ldz"/>
                             <constraint firstAttribute="width" constant="50" id="xjN-nO-yoi"/>
                         </constraints>
                     </imageView>
                     <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="appStore" translatesAutoresizingMaskIntoConstraints="NO" id="94b-um-BUP">
-                        <rect key="frame" x="260" y="13.5" width="50" height="50"/>
+                        <rect key="frame" x="260" y="13" width="50" height="50"/>
                     </imageView>
                     <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="websiteLink" translatesAutoresizingMaskIntoConstraints="NO" id="1bt-5z-b2r">
-                        <rect key="frame" x="260" y="73.5" width="50" height="50"/>
+                        <rect key="frame" x="260" y="73" width="50" height="50"/>
                     </imageView>
                     <textView clipsSubviews="YES" multipleTouchEnabled="YES" userInteractionEnabled="NO" contentMode="scaleToFill" text="Better presentations with less effort using dynamic elements like moons, ganntt-charts, and automation for data heavy reports" textAlignment="justified" translatesAutoresizingMaskIntoConstraints="NO" id="uaX-3O-jb8">
-                        <rect key="frame" x="10" y="65.5" width="246" height="104"/>
+                        <rect key="frame" x="10" y="65" width="246" height="104.5"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                        <fontDescription key="fontDescription" type="system" pointSize="12"/>
+                        <fontDescription key="fontDescription" type="system" pointSize="14"/>
                         <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                     </textView>
                 </subviews>
@@ -80,6 +80,7 @@
                 <outlet property="imgRightSideTop" destination="94b-um-BUP" id="q2s-kz-XOT"/>
                 <outlet property="lblSubtitle" destination="s5O-Uy-txm" id="aPQ-os-I0v"/>
                 <outlet property="lblsubSubtitle" destination="c2y-gf-8u2" id="ufm-lM-nRh"/>
+                <outlet property="textViewWidthContraint" destination="Vhu-Xf-Zjv" id="giT-wo-CHj"/>
                 <outlet property="txtvwDescription" destination="uaX-3O-jb8" id="aTL-ne-z8V"/>
             </connections>
             <point key="canvasLocation" x="62" y="124"/>

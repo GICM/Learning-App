@@ -14,6 +14,8 @@ import PDFGenerator
 import MessageUI
 import Instabug
 import FirebaseStorage
+import AVKit
+import AVFoundation
 
 
 //let API_KEY = "AIzaSyDebZV4yCrBsIXIjWOmTsNgzBtN6G1nmts"
@@ -26,7 +28,7 @@ let MAX_ALTERNATIVE = 1
 let MAIL_HOST_NAME = "smtp.1und1.de"
 let MAIL_PORT = 587
 let MAIL_USERNAME = "cloud@consultingmastery.institute"
-let MAIL_PASSWORD = "9nF-EYT-GPg-heg"
+let MAIL_PASSWORD = "1234ForNow!"
 let WORD_URL : NSString = "https://us-central1-gicm-mobile-app.cloudfunctions.net/appModule/sendMail"
 
 
@@ -90,12 +92,36 @@ class MeetingVC: UIViewController,ChartViewDelegate,AVAudioRecorderDelegate,MFMa
     var chartImageFileName = ""
     var takenImageFilename:[String] = []
     
+    @IBOutlet weak var btnDecision: UIButton!
+    @IBOutlet weak var vwActionItem: UIView!
+    
+    var strCurrentTime = ""
+        var MeetingType = ""
+    
+    var audioPaused = false
+    
+    var actionItemChanged = false
+    var actionItemDictionary = [[String: String]]()
+    
+    var currentActionItem = ""
+    
     //MARK:- View Life Cycle
     override func viewDidLoad() {
         super.viewDidLoad()
         
         
+        NSLog("***********************************************")
+        NSLog(" Meeting View Controller View did load  ")
         
+        self.configUI()
+        let currentDateTime = Date()
+        // initialize the date formatter and set the style
+        let formatter = DateFormatter()
+        formatter.timeStyle = .short
+        formatter.dateStyle = .none
+        self.strCurrentTime = formatter.string(from: currentDateTime)
+        
+        print(self.strCurrentTime)
         //        self.view.addSubview(viewFlip)
         //        viewFlip.frame = .init(x: 0, y: 64, width: UIScreen.main.bounds.size.width, height:  UIScreen.main.bounds.size.height-110)
         //        viewFlip.isHidden = true
@@ -139,7 +165,6 @@ class MeetingVC: UIViewController,ChartViewDelegate,AVAudioRecorderDelegate,MFMa
         }
         
         lblMeetingTime.text = "\(totalRecordingTime) second"
-        
         pieChart.delegate = self
         let recordSettings = [AVEncoderAudioQualityKey: .max, AVEncoderBitRateKey: 16, AVNumberOfChannelsKey: 1, AVSampleRateKey: SAMPLE_RATE]
         audioRecorder = try? AVAudioRecorder(url: soundFilePath()!, settings: recordSettings)
@@ -153,8 +178,8 @@ class MeetingVC: UIViewController,ChartViewDelegate,AVAudioRecorderDelegate,MFMa
         try? audioSession.setCategory(AVAudioSessionCategoryPlayAndRecord)
         audioRecorderFull?.record()
         
-        
     }
+    
     func updateRecordTime(){
         if totalRecordingTime < 2 {
             lblMeetingTime.text = "\(totalRecordingTime) second"
@@ -169,6 +194,7 @@ class MeetingVC: UIViewController,ChartViewDelegate,AVAudioRecorderDelegate,MFMa
             }
         }
     }
+    
     override func viewDidAppear(_ animated: Bool) {
     }
     
@@ -201,6 +227,14 @@ class MeetingVC: UIViewController,ChartViewDelegate,AVAudioRecorderDelegate,MFMa
         }
     }
     
+    func configUI(){
+        if MeetingType == "AirTime" {
+            self.txtViewSpeechResult.isHidden = true
+            self.btnDecision.isHidden = true
+            self.btnActionitem.isHidden = true
+            self.vwActionItem.isHidden = true
+        }
+    }
     
     func startRecording() {
         let audioSession = AVAudioSession.sharedInstance()
@@ -233,7 +267,7 @@ class MeetingVC: UIViewController,ChartViewDelegate,AVAudioRecorderDelegate,MFMa
     
     func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool) {
         print("audio status: \(flag)")
-        if !isStop {
+        if !isStop && !audioPaused {
             self.processAudio()
             //            totalRecordingTime += RECORD_DURATION
             //            lblMeetingTime.text = "\(totalRecordingTime) seconds"
@@ -279,6 +313,7 @@ class MeetingVC: UIViewController,ChartViewDelegate,AVAudioRecorderDelegate,MFMa
                                                         transcript = transcript + " " + (word["word"] as! String)
                                                     }
                                                     self.txtViewSpeechResult.text = transcript
+                                                    self.addActionItemDatas(strText: transcript)
                                                     self.arrayResult += arraySubWords
                                                     self.parseDataSpeech(arraySubSpeech: arraySubWords)
                                                 }
@@ -298,6 +333,27 @@ class MeetingVC: UIViewController,ChartViewDelegate,AVAudioRecorderDelegate,MFMa
         }catch{
             print(error)
         }
+    }
+    
+    func addActionItemDatas(strText: String){
+        if actionItemChanged{
+            
+            let currentDateTime = Date()
+            // initialize the date formatter and set the style
+            let formatter = DateFormatter()
+            formatter.timeStyle = .short
+            formatter.dateStyle = .none
+            let time = formatter.string(from: currentDateTime)
+            
+            let actionItemString = "\(self.currentActionItem):, Time: \(time),Transcript: \(strText)"
+            
+             let actionItem = ["action":"\(actionItemString)","stakeholder":UserDefaults.standard.getUserName()]
+            
+            self.actionItemDictionary.append(actionItem)
+        }
+        print(self.actionItemDictionary)
+
+        actionItemChanged = false
     }
     
     func parseDataSpeech(arraySubSpeech :  [[String : AnyObject]])
@@ -353,6 +409,19 @@ class MeetingVC: UIViewController,ChartViewDelegate,AVAudioRecorderDelegate,MFMa
     
     
     //MARK:- Button Action
+    @IBOutlet weak var pausePlay: UIButton!
+    @IBAction func pauseAction(_ sender: Any) {
+        if audioPaused{
+            self.pausePlay.setImage( UIImage(named: "pause"), for: .normal)
+            self.startRecording()
+        }else{
+            self.pausePlay.setImage( UIImage(named: "record"), for: .normal)
+        }
+        self.audioPaused.toggle()
+        
+    }
+    
+    
     @IBAction func comment(_ sender: Any) {
         BugReporting.invoke()
     }
@@ -364,13 +433,15 @@ class MeetingVC: UIViewController,ChartViewDelegate,AVAudioRecorderDelegate,MFMa
     }
     
     @IBAction func ActionItemsHandler(_ sender: UIButton) {
+        print("\(String(describing: sender.currentTitle))")
+        self.currentActionItem = "\(String(describing: sender.currentTitle ?? ""))"
+        self.actionItemChanged = true
         sender.isSelected = !sender.isSelected
     }
     
     @IBAction func StopAction(_ sender: Any) {
         isStop = true
         self.stopRecording()
-        
         //   self.recordSoundFile()
         //   self.sendSpeechChartDetails()
         // self.sendSpeechChartFirebase()
@@ -398,6 +469,7 @@ class MeetingVC: UIViewController,ChartViewDelegate,AVAudioRecorderDelegate,MFMa
             }
         }
         
+        //Anonymous
         let builder = MCOMessageBuilder()
         builder.header.to = [MCOAddress(displayName: UserDefaults.standard.getUserName(), mailbox: UserDefaults.standard.getEmail())]
         builder.header.from = MCOAddress(displayName: "GICM App", mailbox: MAIL_USERNAME)
@@ -489,7 +561,7 @@ class MeetingVC: UIViewController,ChartViewDelegate,AVAudioRecorderDelegate,MFMa
     func sendSpeechChartNodeFB(){
         
         WebserviceManager.shared.sendMeetingReport(view: self.view, meetingURL: WORD_URL as String, dictBody: self.getSpeechJson(), Success: { (status) in
-           
+            
             DispatchQueue.main.async(execute: {
                 WebserviceManager.shared.hideMBProgress(view: self.view)
                 Utilities.sharedInstance.showToast(message: (FirebaseManager.shared.toastMsgs.suc_mail)!)
@@ -502,7 +574,6 @@ class MeetingVC: UIViewController,ChartViewDelegate,AVAudioRecorderDelegate,MFMa
                 Utilities.sharedInstance.showToast(message: (FirebaseManager.shared.toastMsgs.failed)!)
             })
         }
-        
     }
     
     func uploadChartImageFile(){
@@ -607,29 +678,42 @@ class MeetingVC: UIViewController,ChartViewDelegate,AVAudioRecorderDelegate,MFMa
         var arraySpeaker : [[String:String]] = []
         var j = 0
         for (_,val) in wordsDict{
-            let dict = ["name":arrayPiechartLegend[j],"speech":val] as [String:String]
+            let dict = ["name":arrayPiechartLegend[j],"speech":val,"role":"Manager \(j)"] as [String:String]
             j += 1
             arraySpeaker.append(dict)
         }
         
+        var isTranscipt = true
+        if MeetingType == "AirTime" {
+            arraySpeaker.removeAll()
+            isTranscipt = false
+        }
+        
+        print(arraySpeaker)
+
         //        let data123 = try! JSONSerialization.data(withJSONObject: arraySpeaker, options: .prettyPrinted)
         //        let jsonString = String(data: data123, encoding: .utf8)!
         
-        
         //        imageChart = self.screenShot(with: vwScreenShot)
         //        let data = UIImageJPEGRepresentation(imageChart!,0.5)
+        
+      //  let actionItem = ["action":"Action Item 1","stakeholder":UserDefaults.standard.getUserName()]
         
         let dict = ["user_id": UserDefaults.standard.getUserID(),
                     "meeting_name":strMeetingName,
                     "recording_time":"\(totalRecordingTime)",
             "speech_context":stringSpeechContext,
+            "transcript": isTranscipt,
             "speaker":arraySpeaker,
             "venue":stringPlace,
             "tag":stringTag,
             "user_name":UserDefaults.standard.getUserName(),
             "emailId":UserDefaults.standard.getEmail(),
             "image":takenImageFilename,
-            "chart_image":chartImageFileName
+            "chart_image":chartImageFileName,
+            "actionItems": self.actionItemDictionary ?? [],
+            "timing_of_meeting":self.strCurrentTime,
+            "discussionPoints":[["topic":"topicA","name":"TBD","subTopic":["sub1","sub2","sub3"]]]
             ] as [String : Any]
         return dict
     }
@@ -908,7 +992,7 @@ extension MeetingVC : UITableViewDelegate,UITableViewDataSource,UITextFieldDeleg
         cell.txtfdTitle.tag = indexPath.row
         cell.txtfdTitle.delegate = self
         return cell
-    }
+    } 
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 44
@@ -925,7 +1009,6 @@ extension MeetingVC : UITableViewDelegate,UITableViewDataSource,UITextFieldDeleg
         return true
     }
 }
-
 
 
 

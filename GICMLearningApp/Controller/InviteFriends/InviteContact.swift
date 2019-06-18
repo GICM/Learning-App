@@ -159,9 +159,9 @@ class InviteContact: UIViewController,MFMailComposeViewControllerDelegate,MFMess
     func generateLink(isComplete:@escaping isCompleted){
         guard let uid = Auth.auth().currentUser?.uid else { return }
         invite_id = "\(uid)_\(Utility.sharedInstance.randomString(length: 5))"
-        let link = URL(string: "https://gicm.page.link/?invitedby=\(invite_id)")
-        let referralLink = DynamicLinkComponents(link: link!, domain: "gicm.page.link")
-        referralLink.iOSParameters = DynamicLinkIOSParameters(bundleID: "com.demo.app2018")
+        let link = URL(string: "https://gicmdemo.page.link/?invitedby=\(invite_id)")
+        let referralLink = DynamicLinkComponents(link: link!, domain: "gicmdemo.page.link")
+        referralLink.iOSParameters = DynamicLinkIOSParameters(bundleID: "institute.consultingmastery.meetingmanager")
         referralLink.iOSParameters?.minimumAppVersion = App_Version
         referralLink.iOSParameters?.appStoreID = App_Id
         referralLink.shorten { (shortURL, warnings, error) in

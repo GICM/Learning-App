@@ -6,7 +6,7 @@
     },
     {
       "idiom" : "universal",
-      "filename" : "add.png",
+      "filename" : "Applying-icon-lit_green_2_gray.png",
       "scale" : "2x"
     },
     {
@@ -17,8 +17,5 @@
   "info" : {
     "version" : 1,
     "author" : "xcode"
-  },
-  "properties" : {
-    "template-rendering-intent" : "template"
   }
 }

@@ -11,7 +11,6 @@ import UIKit
 class FAQCell: UITableViewCell {
 
     
-    @IBOutlet weak var lblTitle: UILabel!
     @IBOutlet weak var lblBody: UILabel!
     
     override func awakeFromNib() {

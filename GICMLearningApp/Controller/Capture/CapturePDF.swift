@@ -25,7 +25,7 @@ class CapturePDF: UIViewController,MFMailComposeViewControllerDelegate {
     var closeBtnClosure : (()->Void)?
     var dataPDF:Data?
     @IBOutlet weak var stackPdfImg: UIStackView!
-    let CAPTURE_URL : NSString = "https://gicm-mobile-app.firebaseapp.com/sendCaptureMail"
+    let CAPTURE_URL : NSString = "https://gicm-mobile-app.web.app/sendCaptureMail"
     var chartImageFileName = ""
     var takenImageFilename:[String] = []
     

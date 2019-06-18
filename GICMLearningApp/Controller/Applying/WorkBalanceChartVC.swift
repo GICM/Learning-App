@@ -70,6 +70,7 @@ class WorkBalanceChartVC: UIViewController {
             print("get work life balance error: \(String(describing: error?.localizedDescription))")
         }
     }
+    
     //Fetch work life Balance
     func fetchChartData(){
         

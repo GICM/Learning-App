@@ -9,6 +9,8 @@
 import UIKit
 import Charts
 import Instabug
+import AVKit
+import AVFoundation
 
 var arrChart = [Double]()
 var arrChartData = [String]()
@@ -68,6 +70,8 @@ class LabelsPiechartsVC: UIViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         self.setupPiechart()
+        NSLog("***********************************************")
+        NSLog(" Capture View did load  ")
         self.setupCamera()
     }
     

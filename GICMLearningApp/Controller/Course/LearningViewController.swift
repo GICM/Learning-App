@@ -11,6 +11,7 @@ import SDWebImage
 import Instabug
 import FirebaseStorage
 import FirebaseFirestore
+import Firebase
 
 var naviTitleLearning = ""
 
@@ -62,6 +63,9 @@ class LearningViewController: UIViewController, UIBarPositioningDelegate,UIGestu
     //MARK: - View Life Cycle
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        NSLog("***********************************************")
+        NSLog(" Learning View Controller View did load  ")
         
          // Do any additional setup after loading the view.
         naviTitleLearning = "Learning Playlists"
@@ -154,7 +158,7 @@ class LearningViewController: UIViewController, UIBarPositioningDelegate,UIGestu
     }
     
     @IBAction func addCourses(_ sender: Any) {
-       let story = UIStoryboard(name: "Main", bundle: nil)
+        let story = UIStoryboard(name: "Main", bundle: nil)
         let nextVC = story.instantiateViewController(withIdentifier: "CourseListVC") as! CourseListVC
         self.navigationController?.pushViewController(nextVC, animated: true)
     }

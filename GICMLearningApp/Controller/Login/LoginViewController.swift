@@ -11,7 +11,7 @@ import FBSDKCoreKit
 import FBSDKLoginKit
 import FacebookLogin
 import FBSDKLoginKit
-import TwitterKit
+//import TwitterKit
 
 class LoginViewController: UIViewController, FBSDKLoginButtonDelegate{
 
@@ -48,7 +48,7 @@ class LoginViewController: UIViewController, FBSDKLoginButtonDelegate{
     }
     
     override func viewDidDisappear(_ animated: Bool) {
-       // self.navigationController?.navigationBar.isHidden = false
+       self.navigationController?.navigationBar.isHidden = false
         Utility.sharedInstance.isShowMenu = true
     }
     

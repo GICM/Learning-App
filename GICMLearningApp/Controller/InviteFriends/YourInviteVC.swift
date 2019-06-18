@@ -24,6 +24,10 @@ class YourInviteVC: UIViewController,UITableViewDelegate,UITableViewDataSource {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        
+        NSLog("***********************************************")
+        NSLog(" YourInviteVC View did load  ")
+        
         // Do any additional setup after loading the view.
         if strInvite ==  "invite"{
             self.highlightPending()

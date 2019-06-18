@@ -8,6 +8,7 @@
 
 import UIKit
 import FirebaseFirestore
+import Firebase
 
 class CommentVC: UIViewController,UITableViewDelegate,UITableViewDataSource,UITextFieldDelegate{
     

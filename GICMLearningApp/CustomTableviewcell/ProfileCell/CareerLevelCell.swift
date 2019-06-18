@@ -29,7 +29,7 @@ class CareerLevelCell: UITableViewCell {
     
     
     func setWidth(arrayCareerLevel: [String] , frameView: UIView){
-        let totalLaddarButtonWidth = CGFloat((arrayCareerLevel.count*77) + 30)
+        let totalLaddarButtonWidth = CGFloat((arrayCareerLevel.count*85) + 30)
         let screenWidth = frameView.frame.width
         var extraSpaceForScroll:CGFloat = 0
         if totalLaddarButtonWidth > screenWidth {

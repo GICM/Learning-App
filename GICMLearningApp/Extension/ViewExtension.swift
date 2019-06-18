@@ -106,3 +106,29 @@ extension String {
         self = self.capitalizingFirstLetter()
     }
 }
+
+extension NSMutableAttributedString {
+    
+    @discardableResult func normal(_ text: String) -> NSMutableAttributedString {
+        let normal = NSAttributedString(string: text)
+        append(normal)
+        
+        return self
+    }
+    
+    @discardableResult func bold(_ text: String, withLabel label: UILabel) -> NSMutableAttributedString {
+        
+        //generate the bold font
+        var font: UIFont = UIFont(name: label.font.fontName , size: label.font.pointSize)!
+        font = UIFont(descriptor: font.fontDescriptor.withSymbolicTraits(.traitBold) ?? font.fontDescriptor, size: font.pointSize)
+        
+        //generate attributes
+        let attrs: [NSAttributedStringKey: Any] = [NSAttributedStringKey.font: font]
+        let boldString = NSMutableAttributedString(string:text, attributes: attrs)
+        
+        //append the attributed text
+        append(boldString)
+        
+        return self
+    }
+}

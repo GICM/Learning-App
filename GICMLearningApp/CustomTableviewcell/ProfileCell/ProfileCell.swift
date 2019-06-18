@@ -22,7 +22,8 @@ class ProfileCell: UITableViewCell {
     @IBOutlet weak var txtMail: UITextField!
     @IBOutlet weak var txtDOB: UITextField!
     
-    @IBOutlet weak var btnImageEdit: UIButton!
+    
+    @IBOutlet weak var btnProfile: UIButton!
     @IBOutlet weak var btnEdit: UIButton!
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -50,7 +51,7 @@ class ProfileCell: UITableViewCell {
             }
             else
             {
-                imgProfile.image = UIImage(named: "userProfile")
+                imgProfile.image = UIImage(named: "Userprofile")
             }
         }
     }

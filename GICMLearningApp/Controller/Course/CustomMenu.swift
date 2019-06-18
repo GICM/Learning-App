@@ -12,8 +12,8 @@ class CustomMenu: NSObject {
     static let sharedInstance = CustomMenu()
     var viewContainer : UIView?
     var plusDetail : UIView?
-    let plusData = ["Invite Friends","Reminders","Resources","FAQ"]
-    let plusDataImg = ["friends","bell_blue","resource_blue","FAQ"]
+    let plusData = ["Leaderboard","Invite Friends","Resources","Reminders","FAQ"]
+    let plusDataImg = ["LeaderBoard","friends","resource_blue","bell_blue","FAQ"]
     
     let planeData = ["Invite Friends","Call4Backup","Feedback","FAQ"]
     let planeDataImg = ["friendsInvites","call","feedback","FAQ"]
@@ -25,8 +25,9 @@ class CustomMenu: NSObject {
     
     func handleMenu(plus:Bool)
     {
-    
+        
         if menuOpen == "plus" && isShow && plus{
+            
             self.hideMenu()
         }
         else if menuOpen == "plane" && isShow && !plus {
@@ -40,11 +41,16 @@ class CustomMenu: NSObject {
     
     func showMenu(plus:Bool)
     {
+        UserDefaults.standard.set(true, forKey: "isCenterMenuOpened")
+        UserDefaults.standard.synchronize()
+        NotificationCenter.default.post(name: Notification.Name("centerMenuOpened"), object: nil, userInfo: nil)
         isShow = true
         let width = UIScreen.main.bounds.size.width
         let height = UIScreen.main.bounds.size.height
         
-        viewContainer = UIView.init(frame: CGRect(x: 0, y: 0, width: width, height: height-49))
+        let buttomtabBarHeight = (UIApplication.shared.statusBarFrame.height+49) - 20
+
+        viewContainer = UIView.init(frame: CGRect(x: 0, y: 0, width: width, height: height-buttomtabBarHeight))
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(self.tapBlurButton(_:)))
         viewContainer!.addGestureRecognizer(tapGesture)
         let heightDet  = CGFloat(plusData.count) * rowHeight
@@ -97,38 +103,41 @@ class CustomMenu: NSObject {
     
     
     @objc func selectedPlusMenuButton(btn : UIButton) {
+        UserDefaults.standard.set(false, forKey: "isCenterMenuOpened")
+        UserDefaults.standard.synchronize()
+        NotificationCenter.default.post(name: Notification.Name("centerMenuOpened"), object: nil, userInfo: nil)
         self.hideMenu()
         if btn.tag == 0
+        {
+         //  Utilities.sharedInstance.showToast(message: "Development in progress")
+            let mainStoryboard = UIStoryboard(name: "SubMenuStoryboard", bundle: nil)
+            let nextVC = mainStoryboard.instantiateViewController(withIdentifier: "LeaderBoardVC") as! LeaderBoardVC
+            Constants.appDelegateRef.navigationContollerObj.pushViewController(nextVC, animated: true)
+        }else if btn.tag == 1
         {
             let mainStoryboard = UIStoryboard(name: "InviteFriends", bundle: nil)
             let nextVC = mainStoryboard.instantiateViewController(withIdentifier: "InviteVC") as! InviteVC
             Constants.appDelegateRef.navigationContollerObj.pushViewController(nextVC, animated: true)
-        }
-        else if btn.tag == 1
+        }else if btn.tag == 2
+        {
+            let story = UIStoryboard(name: "SubMenuStoryboard", bundle: nil)
+            let nextVC =  story.instantiateViewController(withIdentifier: "ResourcesVC") as! ResourcesVC
+            Constants.appDelegateRef.navigationContollerObj.pushViewController(nextVC, animated: true)
+        }else if btn.tag == 3
         {
             let story = UIStoryboard(name: "SubMenuStoryboard", bundle: nil)
             let nextVC = story.instantiateViewController(withIdentifier: "RemindersListVC") as! RemindersListVC
             Constants.appDelegateRef.navigationContollerObj.pushViewController(nextVC, animated: true)
-        }
-        else if btn.tag == 2
-        {
-            
-            let story = UIStoryboard(name: "SubMenuStoryboard", bundle: nil)
-            let nextVC =  story.instantiateViewController(withIdentifier: "ResourcesVC") as! ResourcesVC
-            Constants.appDelegateRef.navigationContollerObj.pushViewController(nextVC, animated: true)
-        }
-        else if btn.tag == 3
+        }else if btn.tag == 4
         {
             let mainStoryboard = UIStoryboard(name: "ProfileStoryboard", bundle: nil)
             let nextVC = mainStoryboard.instantiateViewController(withIdentifier: "FAQVC") as! FAQVC
             Constants.appDelegateRef.navigationContollerObj.pushViewController(nextVC, animated: true)
-            
-           
         }
-        
     }
     @objc func selectedPlaneButton(btn : UIButton) {
         self.hideMenu()
+        
         if btn.tag == 0
         {
             let mainStoryboard = UIStoryboard(name: "InviteFriends", bundle: nil)
@@ -163,10 +172,15 @@ class CustomMenu: NSObject {
     
     func hideMenu()
     {
+        UserDefaults.standard.set(false, forKey: "isCenterMenuOpened")
+        UserDefaults.standard.synchronize()
+        NotificationCenter.default.post(name: Notification.Name("centerMenuOpened"), object: nil, userInfo: nil)
+        
         viewContainer?.removeFromSuperview()
         plusDetail?.removeFromSuperview()
         isShow = false
-
+        
+        
     }
     
 }

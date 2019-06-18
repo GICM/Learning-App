@@ -7,6 +7,8 @@
 //
 
 import UIKit
+import AVKit
+import AVFoundation
 
 class Utilities: NSObject {
     
@@ -14,6 +16,11 @@ class Utilities: NSObject {
     
     func viewControllerWithName(identifier: String) ->UIViewController {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        return storyboard.instantiateViewController(withIdentifier: identifier)
+    }
+    
+    func viewControllerWithNameForCustomTableView(identifier: String) ->UIViewController {
+        let storyboard = UIStoryboard(name: "ProfileStoryboard", bundle: nil)
         return storyboard.instantiateViewController(withIdentifier: identifier)
     }
     
@@ -68,8 +75,7 @@ class Utilities: NSObject {
     }
     
     
-    func getRandomQuotes() -> String
-    {
+    func getRandomQuotes() -> String{
         var quotes = UserDefaults.standard.array(forKey: "QuotesList") ?? []
         var shuffledQuotes = "Talent does what it can; genius does what it must."
         if quotes.count > 0{
@@ -77,6 +83,7 @@ class Utilities: NSObject {
         }
         return shuffledQuotes
     }
+    
     //MARK:- Take Screen Shot
     class func takeScreenshot(view: UIView) -> UIImageView {
         UIGraphicsBeginImageContext(view.frame.size)
@@ -88,7 +95,7 @@ class Utilities: NSObject {
         return UIImageView(image: image)
     }
     
-    // MARK: - Alert Methods
+    // MARK: - Alerft Methods
     class func displayFailureAlertWithMessage(title : String, message: String, controller : UIViewController){
         
         let alert = UIAlertController(title: title, message: message, preferredStyle:.alert)
@@ -182,6 +189,11 @@ class Utilities: NSObject {
     class func getCustomPickerInstance() -> CustomPicker{
         let customPickerObj =   Utilities.sharedInstance.viewControllerWithName(identifier:"CustomPickerStoryboard") as! CustomPicker
         return customPickerObj
+    }
+    
+    class func getCustomTableViewInstance() -> customTableView{
+        let customTableView =   Utilities.sharedInstance.viewControllerWithNameForCustomTableView(identifier:"customTableView") as! customTableView
+        return customTableView
     }
     
     func setImageAtLeft(image:String,textField:UITextField){
@@ -278,3 +290,27 @@ class Utilities: NSObject {
 }
 
 
+extension UIButton {
+    func setBottomBorder() {
+         let greenClor = UIColor.init(red: 64.0/255.0, green: 164.0/255.0, blue: 10.0/255.0, alpha: 1.0)
+        self.layer.backgroundColor = UIColor.white.cgColor
+        self.setTitleColor(greenClor, for: .normal)
+        self.layer.masksToBounds = false
+        self.layer.shadowColor = greenClor.cgColor
+        self.layer.shadowOffset = CGSize(width: 0.0, height: 2.0)
+        self.layer.shadowOpacity = 1.0
+        self.layer.shadowRadius = 0.0
+    }
+    
+    func removeButtomBorder() {
+        let defaultGTextColor = UIColor.init(red: 0.0/255.0, green: 0.0/255.0, blue: 0.0/255.0, alpha: 0.75)
+        self.layer.backgroundColor = UIColor.white.cgColor
+        self.setTitleColor(defaultGTextColor, for: .normal)
+        self.layer.masksToBounds = false
+        self.layer.shadowColor = UIColor.white.cgColor
+        self.layer.shadowOffset = CGSize(width: 0.0, height: 0.0)
+        self.layer.shadowOpacity = 0.0
+        self.layer.shadowRadius = 0.0
+    }
+    
+}

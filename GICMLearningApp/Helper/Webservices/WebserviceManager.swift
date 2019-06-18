@@ -18,6 +18,7 @@ class WebserviceManager: NSObject {
   //MARK:- ShowMBProgress
   func showMBProgress (view : UIView){
     DispatchQueue.main.async {
+    
       MBProgressHUD.showAdded(to:view, animated: true)
     }
   }

@@ -7,6 +7,8 @@
 //
 
 import UIKit
+import AVFoundation
+import AVKit
 
 class CameraOverlayVC: UIViewController {
     
@@ -21,6 +23,9 @@ class CameraOverlayVC: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        NSLog("***********************************************")
+        NSLog(" Capture View did load  ")
+        
         let longPress = UITapGestureRecognizer(target: self, action: #selector(self.longPressCameraImageLandscape))
         self.cameraView.addGestureRecognizer(longPress)
         self.view.backgroundColor = UIColor.black.withAlphaComponent(0.5)
@@ -32,6 +37,7 @@ class CameraOverlayVC: UIViewController {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
+    
     
     override func viewDidLayoutSubviews() {
     }
@@ -94,11 +100,14 @@ class CameraOverlayVC: UIViewController {
             captureSession = AVCaptureSession()
             captureSession?.addInput(input)
             captureSession?.addOutput(cameraOutput!)
-            
             videoPreviewLayer = AVCaptureVideoPreviewLayer(session: captureSession!)
             videoPreviewLayer?.videoGravity = AVLayerVideoGravity.resizeAspectFill
-            videoPreviewLayer?.frame = cameraView.layer.bounds
-            cameraView.layer.addSublayer(videoPreviewLayer!)
+            videoPreviewLayer?.frame = cameraView.bounds
+            videoPreviewLayer?.frame.size.width = self.view.frame.width - 40
+            videoPreviewLayer?.frame.size.height = self.view.frame.height - 40
+            
+            cameraView.layer.insertSublayer(videoPreviewLayer!, at: 0)//addSublayer(videoPreviewLayer!)
+            self.videoPreviewLayer?.layoutIfNeeded()
             captureSession?.startRunning()
         } catch {
             print(error)
@@ -121,7 +130,6 @@ extension CameraOverlayVC:AVCapturePhotoCaptureDelegate  {
             Utilities.sharedInstance.showToast(message:(FirebaseManager.shared.toastMsgs.snap_taken)! )
             self.dismiss(animated: false,completion: nil)
             
-
             //  }
             
         }

@@ -2,14 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>AD_UNIT_ID_FOR_BANNER_TEST</key>
-	<string>ca-app-pub-3940256099942544/2934735716</string>
-	<key>AD_UNIT_ID_FOR_INTERSTITIAL_TEST</key>
-	<string>ca-app-pub-3940256099942544/4411468910</string>
 	<key>CLIENT_ID</key>
-	<string>648381017471-44e8u2n4dcp1coqpqpluoqpa6h43v8c0.apps.googleusercontent.com</string>
+	<string>648381017471-67v3uvjuphjm5bvgh8mvao3kal8gu8pl.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.648381017471-44e8u2n4dcp1coqpqpluoqpa6h43v8c0</string>
+	<string>com.googleusercontent.apps.648381017471-67v3uvjuphjm5bvgh8mvao3kal8gu8pl</string>
 	<key>API_KEY</key>
 	<string>AIzaSyDwjgwcSwXJxm_jS3_FIqZsHCffxkfEDpU</string>
 	<key>GCM_SENDER_ID</key>
@@ -17,24 +13,24 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.demo.app2018</string>
+	<string>institute.consultingmastery.meetingmanager</string>
 	<key>PROJECT_ID</key>
 	<string>gicm-mobile-app</string>
 	<key>STORAGE_BUCKET</key>
 	<string>gicm-mobile-app.appspot.com</string>
 	<key>IS_ADS_ENABLED</key>
-	<true></true>
+	<false/>
 	<key>IS_ANALYTICS_ENABLED</key>
-	<false></false>
+	<false/>
 	<key>IS_APPINVITE_ENABLED</key>
-	<true></true>
+	<true/>
 	<key>IS_GCM_ENABLED</key>
-	<true></true>
+	<true/>
 	<key>IS_SIGNIN_ENABLED</key>
-	<true></true>
+	<true/>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:648381017471:ios:65ad4019b7e7a346</string>
+	<string>1:648381017471:ios:8a421b5224f2ecbe</string>
 	<key>DATABASE_URL</key>
-	<string>https://gicm-mobile-app.firebaseio.com</string>
+	<string>https://gicm-mobile-app.web.app</string>
 </dict>
 </plist>

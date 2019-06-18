@@ -13,6 +13,7 @@ import Firebase
 import FirebaseFirestore
 import os.log
 import UserNotifications
+import AVFoundation
 
 class ViewController: UIViewController,UICollectionViewDelegate,UICollectionViewDataSource ,UICollectionViewDelegateFlowLayout,UIScrollViewDelegate{
     
@@ -42,6 +43,8 @@ class ViewController: UIViewController,UICollectionViewDelegate,UICollectionView
     var arrLikeQuotesFirebase : [QueryDocumentSnapshot] = []
     var arrayListofComment : [ListofQuotes.CommentData] = []
     
+    
+    @IBOutlet weak var lblInitialization: UILabel!
     @IBOutlet weak var collVwQuotes: UICollectionView!
     let layout: UICollectionViewFlowLayout = UICollectionViewFlowLayout()
     
@@ -54,14 +57,27 @@ class ViewController: UIViewController,UICollectionViewDelegate,UICollectionView
     var strCurrentCompany = ""
     @IBOutlet var vwbackGround: UIView!
     
-    var lastQuote = UserDefaults.standard.string(forKey: "quotes")
+    var lastQuote = UserDefaults.standard.string(forKey: "quotes") ?? Utilities.sharedInstance.getRandomQuotes()
+    
+    //For vedio
+    var avPlayer: AVPlayer!
+    var avPlayerLayer: AVPlayerLayer!
+    var paused: Bool = false
     
     //MARK:- View Life Cycle
     override func viewDidLoad() {
         super.viewDidLoad()
         //backGround View
+        self.view.isUserInteractionEnabled = false
+
+        self.vwSplash.frame = self.view.frame
+        self.view.addSubview(self.vwSplash)
+
+        self.addBackgroundVideo()
         self.vwbackGround.frame = self.view.frame
         self.view.addSubview(self.vwbackGround)
+        self.checkUsersLikeQuotesFirebase()
+        self.getQuotesFirebase()
         self.applyingList()
         self.updateLastQuote()
         //  currentCompany()
@@ -70,19 +86,29 @@ class ViewController: UIViewController,UICollectionViewDelegate,UICollectionView
             self.speed()
         }
         
-        if ((UserDefaults.standard.string(forKey: "isSynch")) == nil)
-        {
+        if ((UserDefaults.standard.string(forKey: "isSynch")) == nil){
+           
+            FirebaseManager.shared.countTotal = 32
             FirebaseManager.shared.deleteUserData()
-            FirebaseManager.shared.onCompleteShync = {
-                Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(self.dashBoard), userInfo: nil, repeats: false)
-            }
+            UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
         }
         else{
+            FirebaseManager.shared.countTotal = 17
             FirebaseManager.shared.startSync()
-            FirebaseManager.shared.onCompleteShync = {
-                Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(self.dashBoard), userInfo: nil, repeats: false)
-            }
         }
+        
+        FirebaseManager.shared.showProgressView()
+        FirebaseManager.shared.onCompleteShync = {
+            self.timer = Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(self.HideprogressBar), userInfo: nil, repeats: false)
+        }
+    }
+    
+    @objc func HideprogressBar(){
+        FirebaseManager.shared.hideProgress()
+        self.view.isUserInteractionEnabled = true
+      //  self.lblInitialization.isHidden = true
+        self.lblInitialization.text = "Tap to continue"
+        self.timer.invalidate()
     }
     
     override func didReceiveMemoryWarning() {
@@ -95,42 +121,77 @@ class ViewController: UIViewController,UICollectionViewDelegate,UICollectionView
     }
     
     func applyingList(){
-        if !UserDefaults.standard.bool(forKey: "ApplyAdded"){
-            print("ApplyListalready Added")
+        let check = UserDefaults.standard.bool(forKey: "ApplyAdded") as? Bool ?? false
+        if check == false{
+            let appVersion = Bundle.main.infoDictionary!["CFBundleShortVersionString"] as? String ?? "1.4"
+           self.applyListVesionBased(appVersion: appVersion)
         }else{
-            let arrApplyList = ["Tracking","Meeting Manager"]
-            UserDefaults.standard.set(arrApplyList, forKey: "ApplyList")
-            UserDefaults.standard.synchronize()
+            print("ApplyListalready Added")
         }
     }
+    
+    func applyListVesionBased(appVersion: String){
+        let version = appVersions.init(rawValue: appVersion)
+        var arrApplyList = [String]()
+        switch version {
+        case .weeklyPlan?:
+             arrApplyList = ["Weekly planner"]
+        case .meetingManager?:
+            arrApplyList = ["Meeting Manager"]
+        case .tracking?:
+            arrApplyList = ["Tracking"]
+        case .capture?:
+            arrApplyList = ["Capture"]
+        default:
+            print("Default")
+        }
+        
+        UserDefaults.standard.set(arrApplyList, forKey: "ApplyList")
+        UserDefaults.standard.synchronize()
+    }
+    
+    
+    func addBackgroundVideo(){
+        
+        let theURL = Bundle.main.url(forResource: "bg_video", withExtension: "mp4")
+        avPlayer = AVPlayer(url: theURL!)
+        avPlayerLayer = AVPlayerLayer(player: self.avPlayer)
+        avPlayerLayer.videoGravity = AVLayerVideoGravity.resizeAspectFill
+        avPlayer.volume = 0
+        avPlayer.actionAtItemEnd = AVPlayerActionAtItemEnd.none
+        
+        avPlayerLayer.frame = self.view.frame
+        vwSplash.layer.insertSublayer(self.avPlayerLayer, at: 0)
+        avPlayer.play()
+       
+    }
+
     
     //MARK:- Local Methods
     func configUI(){
         
-        
         // addCourse()
-        circularView.minimumValue = 0.5
-        circularView.maximumValue = 12.0
-        circularView.endPointValue = 1.0
-        circularView.thumbLineWidth = 0
+//        circularView.minimumValue = 0.5
+//        circularView.maximumValue = 12.0
+//        circularView.endPointValue = 1.0
+//        circularView.thumbLineWidth = 0
         
         strHours = UserDefaults.standard.integer(forKey: "Hour")
         strMin = UserDefaults.standard.integer(forKey: "Minutes")
         
-        if strMin > 5{
-            strMin = UserDefaults.standard.integer(forKey: "Minutes")
-            circularView.endPointValue = CGFloat(strMin/5)
-        }else{
-            circularView.endPointValue = 1.0
-        }
+//        if strMin > 5{
+//            strMin = UserDefaults.standard.integer(forKey: "Minutes")
+//            circularView.endPointValue = CGFloat(strMin/5)
+//        }else{
+//            circularView.endPointValue = 1.0
+//        }
         
         //Spalsh Screen View
-        self.vwSplash.frame = self.view.frame
-        self.view.addSubview(self.vwSplash)
         
         
-        self.updateTexts()
-        circularView.addTarget(self, action: #selector(updateTexts), for: .valueChanged)
+        
+       // self.updateTexts()
+      //  circularView.addTarget(self, action: #selector(updateTexts), for: .valueChanged)
         
         checkUserLastUse()
         
@@ -142,7 +203,7 @@ class ViewController: UIViewController,UICollectionViewDelegate,UICollectionView
         labelUsername.text = userName
         imgProfilePhoto.layer.cornerRadius = 60
         imgProfilePhoto.clipsToBounds      = true
-//        imgProfilePhoto.sd_setImage(with: URL(string: userProile), placeholderImage: UIImage(named: "No Name"))
+        //        imgProfilePhoto.sd_setImage(with: URL(string: userProile), placeholderImage: UIImage(named: "No Name"))
         if let dataDecoded : Data = Data(base64Encoded: userProile){
             if let image = UIImage(data: dataDecoded)
             {
@@ -172,30 +233,31 @@ class ViewController: UIViewController,UICollectionViewDelegate,UICollectionView
     
     //MARK:- Check User last Use
     func checkUserLastUse(){
-//        var appUsedDate = Date()
-//        if UserDefaults.standard.object(forKey: "lastUsed") != nil  {
-//            appUsedDate = UserDefaults.standard.object(forKey: "lastUsed") as! Date
-//        }
+        var appUsedDate = Date()
+        if UserDefaults.standard.object(forKey: "lastUsed") != nil  {
+            appUsedDate = UserDefaults.standard.object(forKey: "lastUsed") as! Date
+        }
         
-    //    let userLastUsed = appUsedDate.daysBetweenDate(toDate: Date())
+            let userLastUsed = appUsedDate.daysBetweenDate(toDate: Date())
         
-//        if userLastUsed >= 1{
-           // UserDefaults.standard.setLoggedIn(value: false)
-            currnetQuotes()
-            print("Logout ")
-//        }else{
-//            //            let LogedIn = UserDefaults.standard.isLoggedIn()
-//            //            if LogedIn{
-//            //                // gotoDashBoard()
-//            //                currnetQuotes()
-//            //                self.timer = Timer.scheduledTimer(timeInterval: 3, target: self, selector: #selector(self.dashBoard), userInfo: nil, repeats: false)
-//            //                //  return
-//            //            }else{
-//            //self.vwbackGround.isHidden = true
-//            Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(self.splashScreen), userInfo: nil, repeats: false)
-//            print("Logout Already")
-//            //            }
-//        }
+        print(userLastUsed)
+        //        if userLastUsed >= 1{
+        // UserDefaults.standard.setLoggedIn(value: false)
+        currnetQuotes()
+        print("Logout ")
+        //        }else{
+        //            //            let LogedIn = UserDefaults.standard.isLoggedIn()
+        //            //            if LogedIn{
+        //            //                // gotoDashBoard()
+        //            //                currnetQuotes()
+        //            //                self.timer = Timer.scheduledTimer(timeInterval: 3, target: self, selector: #selector(self.dashBoard), userInfo: nil, repeats: false)
+        //            //                //  return
+        //            //            }else{
+        //            //self.vwbackGround.isHidden = true
+        //            Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(self.splashScreen), userInfo: nil, repeats: false)
+        //            print("Logout Already")
+        //            //            }
+        //        }
     }
     
     func currnetQuotes(){
@@ -205,26 +267,34 @@ class ViewController: UIViewController,UICollectionViewDelegate,UICollectionView
         else{
             self.lblQuotes.text = Utilities.sharedInstance.getRandomQuotes()
         }
-        self.strCurrentCompany = UserDefaults.standard.string(forKey: "CurrentCompany") ?? ""
+        self.strCurrentCompany = UserDefaults.standard.string(forKey: "CurrentCompany") ?? "AppLogo"
         print(" Company \(strCurrentCompany)")
         
-        self.imgComapny.image = UIImage(named: strCurrentCompany)
+        self.imgComapny.image = UIImage(named: "AppLogo")
         self.vwSplash.isHidden = false
         self.vwbackGround.isHidden = true
     }
     
-    func statusOfQuotes(strStatus: String){
-        if strStatus == "0"{
+    func statusOfQuotes(){
+        let visibleIndexPaths = collVwQuotes.indexPathsForVisibleItems
+        let modelObj = arrayListofComment[visibleIndexPaths[0].row]
+        let status = modelObj.status ?? "0"
+        
+        if status == "0"{
             self.imgLike.image = #imageLiteral(resourceName: "Like")
-        }else if strStatus == "1"{
+        }else if status == "1"{
             self.imgLike.image = #imageLiteral(resourceName: "Liked")
-        }else if strStatus == "2"{
-            self.imgLike.image = #imageLiteral(resourceName: "Liked")
+        }else if status == "2"{
+            self.imgLike.image = #imageLiteral(resourceName: "unLike")
+        }else{
+            self.imgLike.image = #imageLiteral(resourceName: "Like")
         }
     }
     
     @objc func dashBoard() {
         // Something cool
+        self.timer.invalidate()
+        FirebaseManager.shared.hideProgress()
         gotoDashBoard()
     }
     
@@ -267,7 +337,6 @@ class ViewController: UIViewController,UICollectionViewDelegate,UICollectionView
     func addCourse(){
         // create
         let refCompany = FirebaseManager.shared.firebaseDP!.collection("courseList")
-        
         if let path = Bundle.main.path(forResource: "CourseList", ofType: "json") {
             do {
                 let data = try Data(contentsOf: URL(fileURLWithPath: path), options: .mappedIfSafe)
@@ -276,7 +345,6 @@ class ViewController: UIViewController,UICollectionViewDelegate,UICollectionView
                 refCompany.addDocument(data: jsonCourse as! [String: Any], completion: {(error) in
                     print("the create company error:\(error.debugDescription)")
                 })
-                
             } catch {
                 // handle error
             }
@@ -302,8 +370,37 @@ class ViewController: UIViewController,UICollectionViewDelegate,UICollectionView
     //MARK: - UIButton Action Methods
     @IBAction func releaseNotes(_ sender: Any) {
         let mainStoryboard = UIStoryboard(name: "Main", bundle: nil)
-        let nextVC = mainStoryboard.instantiateViewController(withIdentifier: "CreateVC") as! CreateVC      //  let vc =
+        let nextVC = mainStoryboard.instantiateViewController(withIdentifier: "ReleaseNotesVC") as! ReleaseNotesVC      //  let vc =
         self.navigationController?.pushViewController(nextVC, animated: true)
+    }
+    
+    @IBAction func LikeAction(_ sender: Any) {
+        if arrayListofComment.count > 0{
+        let visibleIndexPaths = collVwQuotes.indexPathsForVisibleItems
+        let modelObj = arrayListofComment[visibleIndexPaths[0].row]
+        self.quoteID = modelObj.q_id ?? ""
+        if imgLike.image == #imageLiteral(resourceName: "Like"){
+            imgLike.image = #imageLiteral(resourceName: "Liked")
+            self.quoteStatus = "1"
+        }else  if imgLike.image == #imageLiteral(resourceName: "Liked"){
+            imgLike.image = #imageLiteral(resourceName: "unLike")
+            self.quoteStatus = "2"
+        }else  if imgLike.image == #imageLiteral(resourceName: "unLike"){
+            imgLike.image = #imageLiteral(resourceName: "Like")
+            self.quoteStatus = "0"
+        }
+        self.arrayListofComment[visibleIndexPaths[0].row].status = self.quoteStatus
+        self.collVwQuotes.reloadData()
+        self.likeQuotesISLFirebase()
+        }else{
+            return
+        }
+    }
+    
+    @IBAction func StopSlashScreen(_ sender: Any) {
+        self.timer.invalidate()
+        self.dashBoard()
+        //self.timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(self.dashBoard), userInfo: nil, repeats: false)
     }
     
     @IBAction func buttonLoginPressed(_ sender: UIButton) {
@@ -337,7 +434,7 @@ class ViewController: UIViewController,UICollectionViewDelegate,UICollectionView
     @IBAction func creating(_ sender: Any) {
         let vc = Utilities.sharedInstance.viewControllerWithName(identifier: Constants.StoryboardIdentifier.tabbar) as! TabBarViewController
         vc.selectedIndex = 1
-      //  Utility.sharedInstance.clearAllUserdata()
+        //  Utility.sharedInstance.clearAllUserdata()
         self.navigationController?.pushViewController(vc, animated: true)
     }
     
@@ -416,13 +513,15 @@ class ViewController: UIViewController,UICollectionViewDelegate,UICollectionView
                 self.getQuotesFirebase()
             }
         }
+        
     }
     
     func reloadCollectionQuotes()
     {
-        lastQuote = UserDefaults.standard.string(forKey: "quotes")
+        lastQuote = UserDefaults.standard.string(forKey: "quotes") ?? Utilities.sharedInstance.getRandomQuotes()
         self.lblQuotes.text = lastQuote
         print("last quotess:\(String(describing: lastQuote))")
+        
         self.reArrangeQuotes()
         self.collVwQuotes.reloadData()
     }
@@ -501,7 +600,31 @@ class ViewController: UIViewController,UICollectionViewDelegate,UICollectionView
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "QuotesCell", for: indexPath) as! QuotesCell
         
         let modelObj = arrayListofComment[indexPath.row]
-        cell.lblQuotes.text = modelObj.quotes ?? ""
+        
+        if (modelObj.quotes?.contains("Conficius")) ?? false {
+    
+            
+            let string = (modelObj.quotes ?? "").components(separatedBy: "-")
+            let normalText = string[0]
+            
+            let boldText  = " -\(string[1])"
+            
+            
+            let attrs = [NSAttributedStringKey.font : UIFont(name:"Nunito-Regular", size: 16.0)]
+            let attributedString = NSMutableAttributedString(string:boldText, attributes:attrs as [NSAttributedStringKey : Any])
+            
+
+            let normalString = NSMutableAttributedString(string:normalText)
+            
+            normalString.append(attributedString)
+            cell.lblQuotes.attributedText = normalString
+        
+        }
+        else {
+            cell.lblQuotes.font = UIFont(name:"Nunito-SemiBold", size: 17.0)
+            cell.lblQuotes.text = modelObj.quotes ?? ""
+        }
+        
         cell.checkImage(like: modelObj.status ?? "0")
         return cell
     }
@@ -512,11 +635,15 @@ class ViewController: UIViewController,UICollectionViewDelegate,UICollectionView
         return CGSize(width: self.collVwQuotes.frame.width, height: collectionView.frame.height)
     }
     
+    func collectionView(_ collectionView: UICollectionView, didEndDisplaying cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        self.statusOfQuotes()
+    }
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if (segue.identifier == "LearningView") {
             let vc = segue.destination as! TabBarViewController
             vc.selectedIndex = 0
-         //   Utility.sharedInstance.clearAllUserdata()
+            //   Utility.sharedInstance.clearAllUserdata()
         }
     }
 }

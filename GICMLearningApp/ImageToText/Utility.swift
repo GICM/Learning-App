@@ -7,6 +7,8 @@
 //
 
 import UIKit
+import AVFoundation
+import AVKit
 //import CNPPopupController
 
 typealias callBack = (Bool) -> Void
@@ -245,6 +247,42 @@ class Utility: NSObject {
         animation.fromValue = NSValue(cgPoint: CGPoint(x: window.center.x - 10, y: window.center.y))
         animation.toValue = NSValue(cgPoint: CGPoint(x: window.center.x + 10, y: window.center.y))
         window.layer.add(animation, forKey: "position")
+    }
+    
+}
+
+
+// Random Color
+extension UIColor {
+    
+    static var random: UIColor {
+        let randomRed:CGFloat = CGFloat(arc4random_uniform(256))
+        let randomGreen:CGFloat = CGFloat(arc4random_uniform(256))
+        let randomBlue:CGFloat = CGFloat(arc4random_uniform(256))
+        let myColor =  UIColor(red: randomRed/255, green: randomGreen/255, blue: randomBlue/255, alpha: 1.0)
+        return myColor
+    }
+}
+
+
+extension UIButton {
+    func underline() {
+        let green = UIColor.init(red: 66.0/255.0, green: 166.0/255.0, blue: 55.0/255.0, alpha: 1.0)
+        self.titleLabel?.textColor = green
+        guard let text = self.titleLabel?.text else { return }
+        
+        let attributedString = NSMutableAttributedString(string: text)
+        attributedString.addAttribute(NSAttributedStringKey.underlineStyle, value: NSUnderlineStyle.styleSingle.rawValue, range: NSRange(location: 0, length: text.count))
+        
+        self.setAttributedTitle(attributedString, for: .normal)
+    }
+    
+    func removeUnderLine() {
+        self.titleLabel?.textColor = UIColor.darkGray
+        guard let text = self.titleLabel?.text else { return }
+        let attributedString = NSMutableAttributedString(string: text)
+        attributedString.addAttribute(NSAttributedStringKey.underlineStyle, value: NSUnderlineStyle.styleNone.rawValue, range: NSRange(location: 0, length: text.count))
+        self.setAttributedTitle(attributedString, for: .normal)
     }
     
 }

@@ -42,6 +42,14 @@ class ShowContentViewController: UIViewController,  UIDocumentInteractionControl
     //MARK: - View Life Cycle
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        
+        NSLog("***********************************************")
+        NSLog("Show Content  View Controller View did load  ")
+        
+        let appdelegateRef = Constants.appDelegateRef
+        appdelegateRef.timerLeader = Timer.scheduledTimer(timeInterval: 1, target: appdelegateRef, selector: #selector(appdelegateRef.calulateLeaderBoard), userInfo: nil, repeats: true)
+        
          self.aniumationButtons()
         NotificationCenter.default.post(name: Notification.Name("NotifyHideMenu"), object: nil, userInfo: nil)
         Utility.sharedInstance.isShowMenu = false
@@ -54,7 +62,6 @@ class ShowContentViewController: UIViewController,  UIDocumentInteractionControl
        // self.title = ""
         configUI()
         print(strFileName)
-       
     }
     
     override func viewDidDisappear(_ animated: Bool) {
@@ -69,6 +76,7 @@ class ShowContentViewController: UIViewController,  UIDocumentInteractionControl
     }
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        self.actionButton.items?.removeAll()
          self.aniumationButtons()
     }
 
@@ -87,6 +95,7 @@ class ShowContentViewController: UIViewController,  UIDocumentInteractionControl
             //        self.landscapeView.frame = self.view.frame
             //        self.imgLandscape.frame = self.landscapeView.frame
 
+            self.actionButton.items?.removeAll()
             self.aniumationButtons()
             switch UIDevice.current.orientation{
             case .portrait:
@@ -142,12 +151,19 @@ class ShowContentViewController: UIViewController,  UIDocumentInteractionControl
     // self.getPDFIndividual()
         self.downloadAndLoadDocs()
     }
+   
+    
     func downloadAndLoadDocs(){
-        _ = refStorage.child(arrayDocs[docIndex]).downloadURL { (durl, error) in
+        
+       // arrayDocs[docIndex] Previous Model
+        
+        _ = refStorage.child(self.subContent).downloadURL { (durl, error) in
             if error == nil{
                 print(durl!)
                self.webView.loadRequest(URLRequest(url: durl!))
-                }
+            }else{
+                print(error)
+            }
             }
     }
     
@@ -227,24 +243,16 @@ class ShowContentViewController: UIViewController,  UIDocumentInteractionControl
         let cancel = ActionButtonItem(title: "Learning Map", image: #imageLiteral(resourceName: "cancel"))
         cancel.action = { item in
             print("Cancel...")
-            
-            for controller in self.navigationController!.viewControllers as Array
-            {
-                print(self.navigationController!.viewControllers as Array);
-                
-                if controller is LearningViewController
-                {
-                    let _ =  self.navigationController?.popToViewController(controller as UIViewController, animated: true)
-                    break
-                }
-            }
-            
+            self.addLeaderBoardAPI()
+            let appde = Constants.appDelegateRef
+
         }
         
         actionButton = ActionButton(attachedToView: self.view, items: [upload, share,download,cancel])
         actionButton.action = { button in button.toggleMenu() }
         actionButton.setTitle("+", forState: UIControlState())
-        //actionButton.backgroundColor = UIColor(red: 238.0/255.0, green: 130.0/255.0, blue: 34.0/255.0, alpha:1.0)
+        actionButton.backgroundColor = #colorLiteral(red: 0.2509803922, green: 0.6431372549, blue: 0.03921568627, alpha: 1)
+        
     }
     func loadDocs(){
         do {
@@ -256,6 +264,19 @@ class ShowContentViewController: UIViewController,  UIDocumentInteractionControl
             
         } catch (let error) {
             print(error)
+        }
+    }
+    
+    func navigateTolearninfgScreen(){
+        for controller in self.navigationController!.viewControllers as Array
+        {
+            print(self.navigationController!.viewControllers as Array);
+            
+            if controller is LearningViewController
+            {
+                let _ =  self.navigationController?.popToViewController(controller as UIViewController, animated: true)
+                break
+            }
         }
     }
     
@@ -366,3 +387,116 @@ extension ShowContentViewController : UIWebViewDelegate{
     }
 }
 
+
+
+// Add leader Board and Update Leader Board details
+extension ShowContentViewController{
+    //Create Wallet Bar Status
+    func addLeaderBoardJSON() -> [String: Any]{
+        let userId = UserDefaults.standard.getUserUUID()
+         let userName = UserDefaults.standard.getUserName().count == 0 ? "Anonymous" : UserDefaults.standard.getUserName()
+        let profile = UserDefaults.standard.getProfileImage()
+        let currentCompany = UserDefaults.standard.string(forKey: "CurrentCompany") ?? "Others"
+        
+        let minitues = Float(Constants.appDelegateRef.totalLeaderBoardTimerCount)/60.0
+        let score = minitues/30.0
+        
+        print("Score \(score)")
+        let emptyDict = ["totalScore": 0.0]
+        let dictEngagement = ["tracking": "0.0",
+            "course": "\(score)",
+            "capture": "0.0",
+            "meeting": "0.0",
+            "weeklyPlanner": "0.0",
+            "totalScore": score] as [String: Any]
+        let dict = ["user_id" : userId,
+                    "username" : userName ,
+                    "user_Picture" : profile ,
+                    "companyName" : currentCompany ,
+                    "Contribution" : emptyDict,
+                    "engagement" : dictEngagement] as [String : Any]
+        return dict
+    }
+    
+    func addLeaderBoardAPI(){
+        let ref = FirebaseManager.shared.firebaseDP!.collection("leaderBoard").whereField("user_id", isEqualTo: UserDefaults.standard.getUserUUID())
+        ref.getDocuments { (snapshot, error) in
+            if let snap = snapshot?.documents, snap.count > 0 {
+                let leaderModel = LeaderModel()
+                let leaderData = leaderModel.parseIntoLeaderModel(snap: snap)
+                print(leaderData.companyName ?? "")
+                // if exist update
+                let documentID = snap[0].documentID
+                let refExist = FirebaseManager.shared.firebaseDP!.collection("leaderBoard").document(documentID)
+                refExist.updateData(self.updateLeaderBoardJSON(model : leaderData), completion: { (error) in
+                    print("add career api error: \(String(describing: error?.localizedDescription))")
+                     Constants.appDelegateRef.timerLeader.invalidate()
+                })
+                
+                print("Already LeaderBord Amount Added")
+                Constants.appDelegateRef.timerLeader.invalidate()
+                 self.navigateTolearninfgScreen()
+                
+            }else{
+                // add
+                let refNew = FirebaseManager.shared.firebaseDP!.collection("leaderBoard")
+                refNew.addDocument(data: self.addLeaderBoardJSON(), completion: { (error) in
+                    if error != nil{
+                         Constants.appDelegateRef.timerLeader.invalidate()
+                        print(error.debugDescription)
+                    }
+                    else{
+                        Constants.appDelegateRef.timerLeader.invalidate()
+                        self.navigateTolearninfgScreen()
+                    }
+                })
+            }
+        }
+    }
+    
+    // Update LeaderBoardDetails
+    func updateLeaderBoardJSON(model : LeaderModel)-> [String: Any]{
+        let userId = UserDefaults.standard.getUserUUID()
+        let userName = UserDefaults.standard.getUserName().count == 0 ? "Anonymous" : UserDefaults.standard.getUserName()
+
+        let profile: String? = UserDefaults.standard.getProfileImage() as? String ?? ""
+        let currentCompany = UserDefaults.standard.string(forKey: "CurrentCompany") ?? "Others"
+        
+        var strBase64 = ""
+        if let profileStr = profile, profileStr.count > 0{
+            let dataDecoded : Data = Data(base64Encoded: profileStr)!
+            let img = UIImage(data: dataDecoded)!
+            let imageData: Data! = UIImageJPEGRepresentation(img, 0.1)
+            strBase64 = imageData.base64EncodedString()
+        }else{
+            //  cell.imgApplying.image = UIImage(named: "noImage")
+        }
+        
+        let minitues = Float(Constants.appDelegateRef.totalLeaderBoardTimerCount)/60.0
+        let score = minitues/30.0
+        
+        let previousTotalScore = Float(model.engagementData?.totalScore ?? 0.0) ?? 0.0
+        let total = previousTotalScore + score
+        let changedTotalScore = Double(total).rounded(digits: 4)
+        
+        let module = Float(model.engagementData?.course ?? "0.0") ?? 0.0
+        let moduleTotal = module + score
+        let finalScore = Double(moduleTotal).rounded(digits: 5)
+        
+        print("Score \(score)")
+        let dictContribution = ["totalScore": model.contributionData?.totalScore ?? 0.0]
+        let dictEngagement = ["tracking": "\(model.engagementData?.tracking ?? "0.0")",
+            "course": "\(finalScore)",
+            "capture": "\(model.engagementData?.capture ?? "0.0")",
+            "meeting": "\(model.engagementData?.meeting ?? "0.0")",
+            "weeklyPlanner": "\(model.engagementData?.weeklyPlanner ?? "0.0")",
+            "totalScore": changedTotalScore] as [String: Any]
+        let dict = ["user_id" : userId,
+                    "username" : userName ,
+                    "user_Picture" : strBase64 ,
+                    "companyName" : currentCompany ,
+                    "Contribution" : dictContribution,
+                    "engagement" : dictEngagement] as [String : Any]
+        return dict
+    }
+}

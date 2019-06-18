@@ -66,7 +66,7 @@ class WorkLifeBalanceLineChartModel {
         sleepDataSet.circleColors = [UIColor.purple]
         sleepDataSet.highlightColor = UIColor.purple
         sleepDataSet.drawHorizontalHighlightIndicatorEnabled = true
-        sleepDataSet.drawValuesEnabled = false
+        sleepDataSet.drawValuesEnabled = true
         
         
         let relaxDataSet = LineChartDataSet(values: relaxDataEntries, label: "Relax")
@@ -136,5 +136,7 @@ class WorkLifeBalanceLineChartModel {
         marker.minimumSize = CGSize(width: 80, height: 40)
         marker.chartView = chart
         chart.marker = marker
+        
+        
     }
 }

@@ -9,6 +9,8 @@
 import UIKit
 import Charts
 import Instabug
+import AVKit
+import AVFoundation
 
 
 class CaptionPiechartsVC: UIViewController {

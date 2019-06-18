@@ -35,7 +35,7 @@ open class ActionButton: NSObject {
     open var backgroundColor: UIColor = Constants.PICKER_TOP_COLOR {//UIColor(red: 238.0/255.0, green: 130.0/255.0, blue: 34.0/255.0, alpha:1.0) {
         willSet {
             floatButton.backgroundColor = newValue
-            backgroundColorSelected = newValue
+            //backgroundColorSelected = newValue
         }
     }
     
@@ -104,6 +104,7 @@ open class ActionButton: NSObject {
         self.contentView = UIView(frame: bounds)
         self.blurVisualEffect = UIVisualEffectView(effect: UIBlurEffect(style: .extraLight))
         self.blurVisualEffect.frame = self.contentView.frame
+        
      //   self.contentView.addSubview(self.blurVisualEffect)
         
         let tap = UITapGestureRecognizer(target: self, action: #selector(ActionButton.backgroundTapped(_:)))
@@ -117,7 +118,7 @@ open class ActionButton: NSObject {
     }
     
     //MARK: - Set Methods
-    open func setTitle(_ title: String?, forState state: UIControlState) {
+    open func setTitle(_ title: String?, forState state: UIControl.State) {
         floatButton.setImage(nil, for: state)
         floatButton.setTitle(title, for: state)
         floatButton.contentEdgeInsets = UIEdgeInsets(top: 0, left: 0, bottom: 8, right: 0)
@@ -145,6 +146,11 @@ open class ActionButton: NSObject {
         let bottomSpacing = NSLayoutConstraint.constraints(withVisualFormat: "H:[floatButton]-15-|", options: NSLayoutFormatOptions.alignAllCenterX, metrics: nil, views: views)
         self.parentView.addConstraints(trailingSpacing)
         self.parentView.addConstraints(bottomSpacing)
+        
+        
+//        self.floatingBlackground.frame = CGRect(x: floatButton.bounds.minX - 20, y: floatButton.bounds.minY - 50, width: floatButton.frame.width + 10, height: 40)
+//
+//        self.contentView.addSubview(floatingBlackground)
     }
     
     //MARK: - Button Actions Methods
@@ -183,7 +189,7 @@ open class ActionButton: NSObject {
     fileprivate func placeButtonItems() {
         if let optionalItems = self.items {
             for item in optionalItems {
-                item.view.center = CGPoint(x: self.floatButton.center.x - 83, y: self.floatButton.center.y)
+                item.view.center = CGPoint(x: self.floatButton.center.x, y: self.floatButton.center.y)
                 item.view.removeFromSuperview()
                 
                 self.contentView.addSubview(item.view)
@@ -224,6 +230,8 @@ open class ActionButton: NSObject {
     fileprivate func showActive(_ active: Bool) {
         if self.active == active {
             self.contentView.alpha = 1.0
+            
+           // floatingBlackground.backgroundColor = .red
             
             if let optionalItems = self.items {
                 for (index, item) in optionalItems.enumerated() {

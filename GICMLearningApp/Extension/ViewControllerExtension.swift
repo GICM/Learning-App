@@ -56,4 +56,14 @@ extension Date {
         let components = Calendar.current.dateComponents([.day], from: self, to: toDate)
         return components.day ?? 0
     }
+    
+    
+    func hoursBetweenDate(from date: Date) -> Int {
+        return Calendar.current.dateComponents([.hour], from: date, to: self).hour ?? 0
+    }
+    
+    func minutesBetweenDate(from date: Date) -> Int {
+            return Calendar.current.dateComponents([.minute], from: date, to: self).minute ?? 0
+    }
+    
 }

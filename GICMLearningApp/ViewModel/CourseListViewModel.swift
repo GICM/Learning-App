@@ -8,6 +8,8 @@
 
 import Foundation
 import FirebaseFirestore
+import Firebase
+import FirebaseStorage
 
 extension LearningViewController {
     
@@ -29,17 +31,18 @@ extension LearningViewController {
         }
     }
     func getUserCourseList(){
-        _ = FirebaseManager.shared.firebaseDP!.collection("course_user").whereField("user_id", isEqualTo: self.userId).addSnapshotListener(includeMetadataChanges: true) { (snapshot, error) in
+        let ref = FirebaseManager.shared.firebaseDP!.collection("course_user").whereField("user_id", isEqualTo: self.userId)
+        ref.getDocuments(completion: { (snapshot, error) in
             if let snap = snapshot?.documents, snap.count > 0
             {
                 self.arrayUserAdded.removeAll()
                 self.arrayUserAdded += snap
                 self.getCourseListFirebase()
             }else{
-                Utilities.sharedInstance.showToast(message: (FirebaseManager.shared.toastMsgs.addCourse)!)
+//                Utilities.sharedInstance.showToast(message: (FirebaseManager.shared.toastMsgs.addCourse)!)
             }
             Firestore.firestore().enableNetwork(completion: nil)
-        }
+        })
     }
     func parseIntoModel(snap:[QueryDocumentSnapshot]){
         self.arrayListofCourse.removeAll()
@@ -201,11 +204,21 @@ extension LearningViewController : UITableViewDelegate,UITableViewDataSource {
 //                cell?.imageView?.image = UIImage(data: dataImg!)
 //            }
 //        })
+        
+        cell?.hideInfoView()
+ 
         cell?.selectionStyle = .none
         if modellearning.buy == "1" {
             cell?.imgBought.isHidden = true
         }else{
-            cell?.imgBought.isHidden = false
+            cell?.imgBought.isHidden = true
+        }
+        
+        if indexPath.row % 2 == 0 {
+            cell?.setUpRightORLeft(side: .Left)
+        }
+        else {
+            cell?.setUpRightORLeft(side: .right)
         }
         
         return cell!
@@ -216,7 +229,8 @@ extension LearningViewController : UITableViewDelegate,UITableViewDataSource {
         if arrayListofCourse[indexPath.row].buy == "1"{
             self.nextVC()
         }else{
-            self.showBuyAlert()
+           // self.showBuyAlert()
+            self.buyCourse()
         }
     }
     

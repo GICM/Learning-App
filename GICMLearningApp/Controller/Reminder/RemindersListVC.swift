@@ -31,6 +31,9 @@ class RemindersListVC: UIViewController{
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        NSLog("***********************************************")
+        NSLog(" Reminder List  Controller View did load  ")
+        
         createCustomCommentInstance()
         tblReminderList.register(UINib(nibName: "RemindersListCell", bundle: nil), forCellReuseIdentifier: "RemindersListCell")
         //  tblReminderList.tableFooterView = UIView()
@@ -270,13 +273,20 @@ extension RemindersListVC:UITableViewDelegate,UITableViewDataSource {
             if error == nil{
                 self.arrayReminder.removeAll()
                 self.reminderListISLFirebase()
-                self.triggerReminders(type: type)
+               self.triggerReminders(type: type)
             }
             else
             {
                 Utilities.displayFailureAlertWithMessage(title: "Attention!", message: "Delete project failed,try again later", controller: self)
             }
         }
+        
+        
+        // Offline
+        self.arrayReminder.removeAll()
+        self.reminderListISLFirebase()
+        self.triggerReminders(type: type)
+        
     }
     
     func triggerReminders(type:String){
@@ -400,17 +410,17 @@ extension RemindersListVC: SwipeTableViewCellDelegate{
     
     func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath, for orientation: SwipeActionsOrientation) -> [SwipeAction]? {
         let modelObj = self.arrayReminder[indexPath.row]
-        if orientation == .right && !modelObj.isStatic {
+        if orientation == .right {//&& !modelObj.isStatic {
             let deleteAction = SwipeAction(style: .destructive, title: "Delete") { action, indexPath in
                 print("Delete")
                 self.strReminderId = modelObj.reminderId
-                if modelObj.isStatic {
-                    Utility.sharedInstance.displayFailureAlertWithMessage(message: "You can't delete the default reminder.", title: "Attention!", onCompletion: { (true) in
-                    })
-                }
-                else{
+//                if modelObj.isStatic {
+//                    Utility.sharedInstance.displayFailureAlertWithMessage(message: "You can't delete the default reminder.", title: "Attention!", onCompletion: { (true) in
+//                    })
+//                }
+//                else{
                     self.showDeleteAlert(type:  modelObj.type)
-                }
+               // }
             }
             
             // customize the action appearance

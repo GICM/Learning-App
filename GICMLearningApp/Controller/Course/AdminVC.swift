@@ -344,6 +344,10 @@ extension AdminVC: LUExpandableTableViewDataSource {
 // MARK: - LUExpandableTableViewDelegate
 
 extension AdminVC: LUExpandableTableViewDelegate {
+    func expandableTableView(_ expandableTableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        return 1
+    }
+    
     func expandableTableView(_ expandableTableView: LUExpandableTableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         /// Returning `UITableViewAutomaticDimension` value on iOS 9 will cause reloading all cells due to an iOS 9 bug with automatic dimensions
         

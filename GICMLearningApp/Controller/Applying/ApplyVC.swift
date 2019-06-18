@@ -8,18 +8,30 @@
 
 import UIKit
 import Instabug
+import SwipeCellKit
 
-class ApplyVC: UIViewController,UITableViewDelegate,UITableViewDataSource {
+class ApplyVC: UIViewController {
     
     //MARK:- View Life Cycle
     @IBOutlet weak var tblApply: UITableView!
+    @IBOutlet var vwEmail: UIView!
+    @IBOutlet weak var txtEmail: UITextField!
     
-    var arrTitle = UserDefaults.standard.array(forKey: "ApplyList") as? [String] //["Tracking","Meeting Manager","Capture"]
-    //var arrImage = [#imageLiteral(resourceName: "Tracking"),#imageLiteral(resourceName: "Meeting"),#imageLiteral(resourceName: "Capture")]
+    var arrTitle = UserDefaults.standard.array(forKey: "ApplyList") as? [String]
+    var walletModelObj:walletModel?//["Tracking","Meeting Manager","Capture"]
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view.
-        NotificationCenter.default.addObserver(self, selector: #selector(self.reloadTableApply), name: Notification.Name("NofifyReloadApply"), object: nil)
+          // Do any additional setup after loading the view.
+          configUI()
+        self.getWalletdetails()
+        self.vwEmail.frame = self.view.frame
+        self.vwEmail.isHidden = true
+        self.tabBarController?.view.addSubview(self.vwEmail)
+        
+      //   self.arrTitle = ["Weekly planner"]//["Tracking","Meeting Manager","Capture","Weekly planner"]
+        self.tblApply.reloadData()
+       NotificationCenter.default.addObserver(self, selector: #selector(self.reloadTableApply), name: Notification.Name("NofifyReloadApply"), object: nil)
     }
 
     override func didReceiveMemoryWarning() {
@@ -29,7 +41,9 @@ class ApplyVC: UIViewController,UITableViewDelegate,UITableViewDataSource {
     
     @objc func reloadTableApply()
     {
-        tblApply.reloadData()
+       configUI()
+      //   self.arrTitle = ["Weekly planner"]//["Tracking","Meeting Manager","Capture","Weekly planner"]
+         self.tblApply.reloadData()
     }
 //    override func viewWillDisappear(_ animated: Bool) {
 //        retractedTabIcon()
@@ -38,12 +52,33 @@ class ApplyVC: UIViewController,UITableViewDelegate,UITableViewDataSource {
     
     override func viewWillAppear(_ animated: Bool) {
         configUI()
+        self.resetLeaderBoardTimer()
+        self.getWalletdetails()
     }
     
+    func resetLeaderBoardTimer(){
+        let appde = Constants.appDelegateRef
+        appde.timerLeader.invalidate()
+        print("Total Timer Value  \(appde.totalLeaderBoardTimerCount)")
+        appde.totalLeaderBoardTimerCount = 0
+    }
+    
+    //MARK:- Local methods
     func configUI(){
-        self.arrTitle = UserDefaults.standard.array(forKey: "ApplyList") as? [String]
-        self.tblApply.reloadData()
-        print(arrTitle?.count)
+        self.arrTitle = UserDefaults.standard.array(forKey: "ApplyList") as? [String] ?? ["Meeting Manager"]
+        
+        if arrTitle?.count == nil || arrTitle?.count == 0{
+            self.arrTitle = [String]()
+            let arrApplyList = ["Tracking","Weekly planner","Breath reset"]
+            UserDefaults.standard.set(arrApplyList, forKey: "ApplyList")
+            UserDefaults.standard.synchronize()
+
+            arrTitle? = ["Tracking","Weekly planner","Breath reset"]
+            self.tblApply.reloadData()
+        }else{
+            print("Not Empty")
+            self.tblApply.reloadData()
+        }
     }
     
     //MARK:- Button Action
@@ -52,163 +87,51 @@ class ApplyVC: UIViewController,UITableViewDelegate,UITableViewDataSource {
     }
     
     @IBAction func addTools(_ sender: Any) {
-                let story = UIStoryboard(name: "Main", bundle: nil)
-                let nextVC = story.instantiateViewController(withIdentifier: "AddToolsVC") as! AddToolsVC
-               self.navigationController?.pushViewController(nextVC, animated: true)
+        let story = UIStoryboard(name: "Main", bundle: nil)
+        let nextVC = story.instantiateViewController(withIdentifier: "AddToolsVC") as! AddToolsVC
+        self.navigationController?.pushViewController(nextVC, animated: true)
     }
     
-    //MARK:- Delegate Methods
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        print(arrTitle?.count)
-        return arrTitle!.count
+    @IBAction func emailCancel(_ sender: Any) {
+        vwEmail.isHidden = true
+        self.txtEmail.text = ""
+        self.txtEmail.resignFirstResponder()
+        self.view.endEditing(true)
     }
     
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "ApplyCell", for: indexPath) as! ApplyCell
-        cell.selectionStyle = .none
-        
-        let strTilte = self.arrTitle![indexPath.row]
-        cell.imgView.image = UIImage(named: strTilte)//arrImage[indexPath.row]
-        if indexPath.row % 2 == 0{
-            cell.lblLeftType.text = strTilte
-            cell.lblRightType.isHidden = true
-        }else{
-            cell.lblRightType.text = strTilte
-            cell.lblLeftType.isHidden = true
-        }
-        if strTilte == "Meeting Manager" || strTilte == "Capture"
-        {
-            let loginValue = UserDefaults.standard.string(forKey: "Login")
-            if ((loginValue == "0") || (ReachabilityManager.isConnectedToNetwork() == false))
-            {
-                cell.contentView.alpha = 0.5
-            }else{
-                cell.contentView.alpha = 1.0
-            }
-        }
-        return cell
-    }
-    
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        
-       // ["Tracking","Meeting Manager","Capture"]
-        let selected = self.arrTitle![indexPath.row]
-        if selected == "Tracking"{
-            let story = UIStoryboard(name: "TrackingStoryBoard", bundle: nil)
-            let nextVC =  story.instantiateViewController(withIdentifier: "TrackingVC") as! TrackingVC
-            self.navigationController?.pushViewController(nextVC, animated: true)
-        }else if selected == "Meeting Manager"{
-            let loginValue = UserDefaults.standard.string(forKey: "Login")
+    @IBAction func saveEmail(_ sender: Any) {
+        if (txtEmail.text?.count)! > 0 {
+            let  strEmailSwitch = txtEmail.text ?? ""
             
-            if loginValue == "0"
-            {
-                self.showLoginAlert()
-            }else if(ReachabilityManager.isConnectedToNetwork() == false)
-            {
-                self.showInternetAlert()
-            }
-            else{
-                print("Meeting")
+            if !Utilities.sharedInstance.validateEmail(with:strEmailSwitch){
+                let errorMessage = Constants.ErrorMessage.vaildemail
+                Utilities.displayFailureAlertWithMessage(title: "Attention!", message: errorMessage, controller: self)
+            }else{
+                vwEmail.isHidden = true
+                self.txtEmail.text = ""
+                self.txtEmail.resignFirstResponder()
+                self.view.endEditing(true)
+                
+                if UserDefaults.standard.getUserName().count == 0{
+                    UserDefaults.standard.setUserName(value: "Anonymous")
+                }else{
+                    
+                }
+                
+                UserDefaults.standard.setEmail(value: strEmailSwitch)
+                UserDefaults.standard.synchronize()
                 let story = UIStoryboard(name: "CaptureMeeting", bundle: nil)
                 let nextVC = story.instantiateViewController(withIdentifier: "MeetingConfigVC") as! MeetingConfigVC
                 self.navigationController?.pushViewController(nextVC, animated: true)
             }
-        }else if selected == "Capture"{
-            
-            let loginValue = UserDefaults.standard.string(forKey: "Login")
-            
-            if loginValue == "0"
-            {
-                //Show Alert
-                self.showLoginAlert()
-            }
-            else if(ReachabilityManager.isConnectedToNetwork() == false)
-            {
-                self.showInternetAlert()
-            }
-            else{
-                print("Capture")
-                let story = UIStoryboard(name: "CaptureMeeting", bundle: nil)
-                let nextVC = story.instantiateViewController(withIdentifier: "CaptureVC") as! CaptureVC
-                self.navigationController?.pushViewController(nextVC, animated: true)
-            }
-            
-            
+            //self.switchUserFB();
         }else{
-            self.showLoginAlert()
+            Utilities.displayFailureAlertWithMessage(title: "Attention!", message: Constants.ErrorMessage.email, controller: self)
+            //  Utilities.sharedInstance.showToast(message: (FirebaseManager.shared.toastMsgs.emailid)!)
         }
-//        if indexPath.row == 0{
-//            print("Tracking")
-//
-////            let story = UIStoryboard(name: "TrackingStoryBoard", bundle: nil)
-////            let nextVC = story.instantiateViewController(withIdentifier: "ApplyingListVC") as! ApplyingListVC
-////            self.navigationController?.pushViewController(nextVC, animated: true)
-////
-//            let story = UIStoryboard(name: "TrackingStoryBoard", bundle: nil)
-//            let nextVC =  story.instantiateViewController(withIdentifier: "TrackingVC") as! TrackingVC
-//            self.navigationController?.pushViewController(nextVC, animated: true)
-//
-//        }else if indexPath.row == 1{
-//            let loginValue = UserDefaults.standard.string(forKey: "Login")
-//
-//            if loginValue == "0"{
-//                //Show Alert
-//                self.showLoginAlert()
-//            }else{
-//            print("Meeting")
-//            let story = UIStoryboard(name: "CaptureMeeting", bundle: nil)
-//            let nextVC = story.instantiateViewController(withIdentifier: "MeetingConfigVC") as! MeetingConfigVC
-//            self.navigationController?.pushViewController(nextVC, animated: true)
-//            }
-//        }else{
-//
-//            let loginValue = UserDefaults.standard.string(forKey: "Login")
-//
-//            if loginValue == "0"{
-//                //Show Alert
-//                self.showLoginAlert()
-//            }else{
-//                print("Capture")
-//                let story = UIStoryboard(name: "CaptureMeeting", bundle: nil)
-//                let nextVC = story.instantiateViewController(withIdentifier: "CaptureVC") as! CaptureVC
-//                self.navigationController?.pushViewController(nextVC, animated: true)
-//            }
-//
-//
-//        }
     }
     
-    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        return 5
-    }
     
-    func tableView(_ tableView: UITableView, estimatedHeightForHeaderInSection section: Int) -> CGFloat {
-        return 5
-    }
-    // Make the background color show through
-    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        let headerView = UIView()
-        headerView.backgroundColor = UIColor.white
-        return headerView
-    }
     
-    func showLoginAlert() {
-//        let alertController = UIAlertController(title: "Attention!", message: NSLocalizedString(" Please login to access Meeting manager and capture features", comment:""), preferredStyle: .alert)
-//
-//        let OKAction = UIAlertAction(title: "Ok", style: .default) { (action:UIAlertAction!) in
-//            Constants.appDelegateRef.requesetAutoLogoutProcess()
-//        }
-//        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { (action:UIAlertAction!) in
-//        }
-//        alertController.addAction(OKAction)
-//        alertController.addAction(cancelAction)
-//        self.navigationController?.present(alertController, animated: true, completion:nil)
-        Utilities.sharedInstance.showToast(message: (FirebaseManager.shared.toastMsgs.update_mail)!)
-
-    }
-    func showInternetAlert() {
-        Utilities.sharedInstance.showToast(message: (FirebaseManager.shared.toastMsgs.connect)!)
-        
-    }
-
 }
+

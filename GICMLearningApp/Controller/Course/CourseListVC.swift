@@ -14,28 +14,17 @@ import FirebaseFirestore
 class CourseListVC: UIViewController,UITableViewDelegate,UITableViewDataSource, UICollectionViewDelegate,UICollectionViewDataSource,UICollectionViewDelegateFlowLayout,UITextFieldDelegate{
 
     //MARK:- Initialization
-    @IBOutlet weak var txtSearch: UITextField!
     @IBOutlet weak var tblCourse: UITableView!
     
     @IBOutlet weak var collDashboard: UICollectionView!
     
-    
-    //Custom Picker Instance variable
-    var customPickerObj : CustomPicker!
-    var selectedPicker  = ""
     var course_id = ""
-    let allPosting = ["Job Seeker", "Analyst","Consultant","Senior Consultant","Managing Consultant","Principal","Vice President","Business Analyst","Associate","Engagement Manager","Associate Partner","Partner","Associate Consultant","Senior Associate Consultant","Case Team Leader","Manager","Junior","Senior","Senior Manager","Director","Supervisor"]
-    
-    var arrRole = UserDefaults.standard.array(forKey: "CurrentPosting") ?? [""]
-    
-    
     
     var arrContributionSections = ["New Idea","Develop concept","Feedback","Own business"]
     var arrarContributionModuleImage = [#imageLiteral(resourceName: "NewIdea"),#imageLiteral(resourceName: "DevelopmentConcept"),#imageLiteral(resourceName: "Feedback"),#imageLiteral(resourceName: "OwnBussiness")]
     
    // var arrSearch:[String] = []
     
-    var arrImage = ["Art&Design","Business&Management","Computer&Technology", "Education&Teaching","Nurcing&Health Care","Business&Management","Computer&Technology",]
     
     var refStorage = Storage.storage().reference()
     var arrayListofCourse : [CoursedataFB] = []
@@ -46,11 +35,9 @@ class CourseListVC: UIViewController,UITableViewDelegate,UITableViewDataSource, 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        self.arrRole = UserDefaults.standard.array(forKey: "CurrentPosting") ?? self.allPosting
+        NSLog("***********************************************")
+        NSLog(" CourseListVC View did load  ")
         getCourseListFirebase()
-        createCustomPickerInstance()
-        Utilities.leftGapView(self.txtSearch)
-        txtSearch.addTarget(self, action: #selector(searchRecordsAsPerText(_ :)), for: .editingChanged)
 
         // Do any additional setup after loading the view.
     }
@@ -95,17 +82,8 @@ class CourseListVC: UIViewController,UITableViewDelegate,UITableViewDataSource, 
         }
         
         self.arrSearch = self.arrayListofCourse
+        self.tblCourse.reloadData()
         
-        let role = UserDefaults.standard.string(forKey: "Role") ?? ""
-        print("Role \(role)")
-        
-        if (role.count) > 0 {
-            self.roleBasedCourseList(strPosting: role)
-        }else{
-            self.arrSearch = self.arrayListofCourse
-            self.tblCourse.reloadData()
-        }
-
     }
     
     
@@ -113,42 +91,6 @@ class CourseListVC: UIViewController,UITableViewDelegate,UITableViewDataSource, 
     func roleBasedCourseList(strPosting: String){
         self.arrSearch = self.arrayListofCourse.filter({$0.course_short_desc?.range(of: strPosting, options: [.diacriticInsensitive, .caseInsensitive]) != nil} )
         self.tblCourse.reloadData()
-    }
-    
-    //MARK:- Local Methods
-    @objc func searchRecordsAsPerText(_ textfield:UITextField) {
-        
-        if (textfield.text?.count)! > 0 {
-        self.arrSearch = self.arrayListofCourse.filter({$0.course_title?.range(of: textfield.text!, options: [.diacriticInsensitive, .caseInsensitive]) != nil} )
-        self.tblCourse.reloadData()
-        }else{
-           self.arrSearch = self.arrayListofCourse
-            self.tblCourse.reloadData()
-        }
-//        arrSearch.removeAll()
-//        if textfield.text?.count != 0 {
-//            for strModelText in arrRole {
-//                let mobileRange = (strModelText).lowercased().range(of: textfield.text!, options: .caseInsensitive, range: nil,   locale: nil)
-//
-//                if  mobileRange != nil
-//                {
-//                    arrSearch.append(strModelText)
-//                }
-//            }
-//        } else {
-//            arrSearch = arrRole
-//        }
-      //  tblCourse.reloadData()
-    }
-    
-    //MARK:- Delegate
-    func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
-        if textField == txtSearch{
-            listOfCompany(listData: arrRole as! [String])
-            return false
-        }else{
-            return true
-        }
     }
     
     //MARK:- Button Action
@@ -164,7 +106,6 @@ class CourseListVC: UIViewController,UITableViewDelegate,UITableViewDataSource, 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell{
         let cell = tableView.dequeueReusableCell(withIdentifier: "CourseListCell", for: indexPath) as! CourseListCell
         cell.lblCourse.text = self.arrSearch[indexPath.row].course_title
-      //  cell.imgCourse.image = UIImage(named: arrImage[indexPath.row])//arrImage[indexPath.row]
         cell.selectionStyle = .none
         return cell
     }
@@ -172,19 +113,9 @@ class CourseListVC: UIViewController,UITableViewDelegate,UITableViewDataSource, 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         print("Selected")
         course_id = arrSearch[indexPath.row].course_id ?? ""
-        self.showBuyAlert()
+        self.addCourse()
     }
-    func showBuyAlert() {
-        let alertController = UIAlertController(title: "Attention!", message: NSLocalizedString("Do you want to Add?", comment:""), preferredStyle: .alert)
-        let OKAction = UIAlertAction(title: "OK", style: .default) { (action:UIAlertAction!) in
-            self.addCourse()
-        }
-        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { (action:UIAlertAction!) in
-        }
-        alertController.addAction(OKAction)
-        alertController.addAction(cancelAction)
-        self.navigationController?.present(alertController, animated: true, completion:nil)
-    }
+
     func addCourse(){
         //check already added
         let refEx = FirebaseManager.shared.firebaseDP!.collection("course_user").whereField("user_id", isEqualTo: userId).whereField("course_id", isEqualTo: course_id)
@@ -200,6 +131,7 @@ class CourseListVC: UIViewController,UITableViewDelegate,UITableViewDataSource, 
                 ref.addDocument(data: self.getCourseJson()) { (error) in
                     if error == nil{
                         Utilities.sharedInstance.showToast(message: (FirebaseManager.shared.toastMsgs.course_add)!)
+                        self.navigationController?.popViewController(animated: true)
                     }
                 }
             }
@@ -243,77 +175,20 @@ class CourseListVC: UIViewController,UITableViewDelegate,UITableViewDataSource, 
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let email = UserDefaults.standard.getEmail()
+        if email.isEmpty{
+            Utilities.sharedInstance.showToast(message: "Please add email in profile")
+        }else{
+       // Utilities.sharedInstance.showToast(message: "Development in progress")
         let story = UIStoryboard(name: "CallBackupStoryboard", bundle: nil)
         let nextVC = story.instantiateViewController(withIdentifier: "SendCallBackVC") as! SendCallBackVC
         nextVC.fromVC = "Contribution"
         nextVC.strTitle = arrContributionSections[indexPath.row]
         nextVC.strContributionType = arrContributionSections[indexPath.row]
-        self.navigationController?.pushViewController(nextVC, animated: true)
-        
-        //        if indexPath.row == 0{
-        //            print("By Role Suggestion")
-        //            let story = UIStoryboard(name: "Main", bundle: nil)
-        //            let nextVC = story.instantiateViewController(withIdentifier: "RoleVC") as! RoleVC
-        //            self.navigationController?.pushViewController(nextVC, animated: true)
-        //
-        //        }else if indexPath.row == 1{
-        //            print("Course list")
-        //            let story = UIStoryboard(name: "Main", bundle: nil)
-        //            let nextVC = story.instantiateViewController(withIdentifier: "CourseListVC") as! CourseListVC
-        //            self.navigationController?.pushViewController(nextVC, animated: true)
-        //
-        //        }else if indexPath.row == 2{
-        //            print("Contributions")
-        //            let story = UIStoryboard(name: "Main", bundle: nil)
-        //            let nextVC = story.instantiateViewController(withIdentifier: "ContributionVC") as! ContributionVC
-        //            self.navigationController?.pushViewController(nextVC, animated: true)
-        //        }
-    }
-}
-
-
-
-//MARK:- CustomPicker Methods
-extension CourseListVC :CustomPickerDelegate {
-    func createCustomPickerInstance(){
-        customPickerObj = Utilities.getCustomPickerInstance()
-        customPickerObj.delegate = self
-    }
-    
-    func listOfCompany(listData : [String]){
-        
-        customPickerObj.totalComponents = 1
-        customPickerObj.arrayComponent = listData
-        addCustomPicker()
-        customPickerObj.loadCustomPicker(pickerType: CustomPickerType.e_PickerType_String)
-        customPickerObj.customPicker.reloadAllComponents()
-    }
-    
-    func addCustomPicker() {
-        self.view.addSubview(customPickerObj.view)
-        self.customPickerObj.vwBaseView.frame.size.height = self.view.frame.size.height
-        self.customPickerObj.vwBaseView.frame.size.width = self.view.frame.size.width
-    }
-    
-    func removeCustomPicker(){
-        if customPickerObj != nil{
-            customPickerObj.view.removeFromSuperview()
+            self.navigationController?.pushViewController(nextVC, animated: true)
         }
     }
-    
-    func itemPicked(item: AnyObject) {
-        removeCustomPicker()
-        let pickerDateValue = item as! String
-        // strCompanyName = pickerDateValue
-        self.txtSearch.text = pickerDateValue
-        self.roleBasedCourseList(strPosting: pickerDateValue)
-        //  getCompanyPostingList(companyName: strCompanyName)
-    }
-    
-    func pickerCancelled(){
-        removeCustomPicker()
-        selectedPicker = ""
-    }
 }
+
 
 

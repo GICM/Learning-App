@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Firebase
 
 struct LoginModel  : Decodable{
   
@@ -53,6 +54,41 @@ struct RegisiterModel : Codable {
     }
   }
 }
+
+// Wallet
+
+class walletModel: NSObject {
+    public var userID :String?
+    public var walletAmount :String?
+    public var capture :String?
+    public var meeting :String?
+    public var tracking :String?
+    public var course: String?
+    public var weeklyPlanner: String?
+    
+    func parseIntoModel(snap:[QueryDocumentSnapshot]) -> walletModel{
+        let walletModelObj = walletModel()
+        for obj in snap{
+            walletModelObj.userID = obj["user_id"] as? String ?? ""
+            walletModelObj.walletAmount = obj["walletAmount"] as? String ?? ""
+            walletModelObj.capture = obj["capture"] as? String ?? ""
+            walletModelObj.meeting = obj["meeting"] as? String ?? ""
+            walletModelObj.tracking = obj["tracking"] as? String ?? ""
+            walletModelObj.course = obj["course"] as? String ?? ""
+            walletModelObj.weeklyPlanner = obj["weeklyPlanner"] as? String ?? ""
+            
+            
+            //Store Wallet Details
+            let wallet = obj["walletAmount"] as? String ?? ""
+            UserDefaults.standard.set(wallet, forKey: "walletAmount")
+            UserDefaults.standard.synchronize()
+            
+        }
+        return walletModelObj
+    }
+    
+}
+
 
 
 

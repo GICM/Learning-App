@@ -22,6 +22,8 @@ class ApplyingListVC: UIViewController,UITableViewDelegate,UITableViewDataSource
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        NSLog("***********************************************")
+        NSLog(" Apply Controller View did load  ")
         // Do any additional setup after loading the view.
         NotificationCenter.default.post(name: Notification.Name("NotifyHideMenu"), object: nil, userInfo: nil)
         Utility.sharedInstance.isShowMenu = false

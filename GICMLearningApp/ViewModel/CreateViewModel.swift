@@ -213,14 +213,29 @@ extension CreateViewController :CustomPickerDelegate {
         dismissKeyboard()
         selectedPicker = "dob"
         addCustomPicker()
+        
         customPickerObj.loadCustomPicker(pickerType: CustomPickerType.e_PickerType_Date)
+       // let currentDate: Date = Date()
+//        let timeAsString : String = String(babyDate.characters.prefix(10))
+//        let dateFormatter = DateFormatter()
+//        dateFormatter.dateFormat = "yyyy-MM-dd"
+//        let date12: Date? = dateFormatter.date(from: timeAsString)
+//        if let aDate = date12
+//        {
+//            self.customPickerObj.customDatePicker.maximumDate = aDate
+//        }
+        
+        customPickerObj.customDatePicker.maximumDate = Calendar.current.date(byAdding: .year, value: 0, to: Date())
         customPickerObj.customDatePicker.datePickerMode = .date
+
+        
     }
     func addCustomPicker() {
         self.view.addSubview(customPickerObj.view)
         self.customPickerObj.vwBaseView.frame.size.height = self.view.frame.size.height
         self.customPickerObj.vwBaseView.frame.size.width = self.view.frame.size.width
     }
+    
     func removeCustomPicker(){
         if customPickerObj != nil{
             customPickerObj.view.removeFromSuperview()

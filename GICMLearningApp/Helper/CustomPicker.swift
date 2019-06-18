@@ -125,7 +125,6 @@ class CustomPicker: UIViewController, UIPickerViewDataSource, UIPickerViewDelega
     
     let arrayButtons = [cancelButton,flexibespace,doneButton]
     pickerToolbar.setItems(arrayButtons, animated: true)
-    
     return pickerToolbar
   }
   

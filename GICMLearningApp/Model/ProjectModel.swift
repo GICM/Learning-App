@@ -28,14 +28,34 @@ class ProjectModelFB : NSObject{
     var project_name :String?
     var client_name :String?
     var project_image :String?
-    var start_date :String?
+    var start_date :String!
     var end_date :String?
     var date :String?
     var meeting_point :String?
     var meeting_point_pos :Int?
     var meeting_point_neg :Int?
+    var workStreamArray :[String]?
+    var workStreamData : [[String:Any]]?
+    var goal :String?
+    var excercise :String?
+    var meTime :String?
+    var sleep :String?
+    var data : [WeeklyPlannerData]?
 }
 
+
+struct WeeklyPlannerData {
+    var id :String?
+    var userName :String?
+    var WorkStreamName :String?
+    var Meetings :[String]?
+    var Research :[String]?
+    var Deliverable :[String]?
+    var relation :String?
+    var Travel :String?
+    var isStatic : Bool?
+    var packed :String?
+}
 
 
 struct ProjectModel : Codable {

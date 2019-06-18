@@ -10,6 +10,10 @@
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleGetInfoString</key>
 	<string></string>
+	<key>CFBundleIcons</key>
+	<dict/>
+	<key>CFBundleIcons~ipad</key>
+	<dict/>
 	<key>CFBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
@@ -19,7 +23,7 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.1</string>
+	<string>1.7</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -42,7 +46,7 @@
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>CFBundleURLName</key>
-			<string>com.demo.app2018</string>
+			<string>institute.consultingmastery.meetingmanager</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>gicm</string>
@@ -55,12 +59,12 @@
 			<string>bundleid</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.demo.app2018</string>
+				<string>institute.consultingmastery.meetingmanager</string>
 			</array>
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>0.26</string>
+	<string>0.57</string>
 	<key>Fabric</key>
 	<dict>
 		<key>APIKey</key>
@@ -154,5 +158,7 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>firebase_crashlytics_collection_enabled</key>
+	<true/>
 </dict>
 </plist>

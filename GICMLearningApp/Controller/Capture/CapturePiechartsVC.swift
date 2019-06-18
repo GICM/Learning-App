@@ -13,6 +13,8 @@ import Charts
 import FirebaseMLVision
 import Firebase
 import Instabug
+import AVKit
+import AVFoundation
 
 class CapturePiechartsVC: UIViewController{
     
@@ -47,6 +49,9 @@ class CapturePiechartsVC: UIViewController{
     var isFirstTime = true
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        NSLog("***********************************************")
+        NSLog(" Capture View did load  ")
 //        textDetector = Vision().textDetector()
        // cloudTextDetector = Vision().cloudTextDetector()
         
@@ -555,3 +560,5 @@ extension UIImage {
         return nil
     }
 }
+
+
